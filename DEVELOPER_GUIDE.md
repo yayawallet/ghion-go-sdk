@@ -1,0 +1,239 @@
+# Ghion Finances Go SDK - Developer Guide
+
+Welcome to the official developer guide for the `ghion-go-sdk`. This document provides comprehensive instructions on setting up, implementing, and troubleshooting the SDK in your Go applications.
+
+## Table of Contents
+1. [Installation & Setup](#installation--setup)
+2. [Core Concepts](#core-concepts)
+3. [Implementation Guide](#implementation-guide)
+   - [Initializing a Payment](#1-initializing-a-payment)
+   - [Handling Payment Methods](#2-handling-payment-methods)
+     - [OTP Flow (YaYa Wallet)](#otp-flow-yaya-wallet)
+     - [USSD Flow](#ussd-flow)
+     - [QR Code Flow](#qr-code-flow)
+   - [Webhooks Integration](#3-webhooks-integration)
+4. [Best Practices](#best-practices)
+5. [Common Issues & Fixes](#common-issues--fixes)
+
+---
+
+## Installation & Setup
+
+### 1. Install the SDK
+Install the package via `go get`:
+
+```bash
+go get github.com/yayawallet/ghion-go-sdk
+```
+
+### 2. Environment Variables
+You will need your API credentials from the Ghion Developer Dashboard. Securely store them in your environment (e.g., using a `.env` file):
+
+```env
+GHION_API_KEY=your_api_key_here
+GHION_API_SECRET=your_api_secret_here
+GHION_API_PASSPHRASE=your_passphrase_here
+WEBHOOK_URL=https://your-domain.com/webhook
+```
+
+### 3. Initialize the Client
+Import and initialize the `GhionClient` in your application:
+
+```go
+package main
+
+import (
+	"log"
+	"os"
+
+	"github.com/yayawallet/ghion-go-sdk"
+)
+
+func main() {
+	client, err := ghion.NewClient(&ghion.Config{
+		APIKey:     os.Getenv("GHION_API_KEY"),
+		APISecret:  os.Getenv("GHION_API_SECRET"),
+		Passphrase: os.Getenv("GHION_API_PASSPHRASE"),
+	})
+	if err != nil {
+		log.Fatalf("Failed to initialize client: %v", err)
+	}
+}
+```
+
+---
+
+## Core Concepts
+
+The SDK revolves around a few key resources:
+- **Payment Session:** Created when a user initiates a checkout. Represents the transaction lifecycle.
+- **Channels:** Different payment methods available (e.g., YaYa Wallet, Card, Telebirr).
+- **Webhooks:** The primary, asynchronous mechanism for receiving definitive payment statuses (Success, Failure, Expiry).
+
+---
+
+## Implementation Guide
+
+### 1. Initializing a Payment
+When a user clicks "Checkout", you must create a payment session. This returns the available channels, provider information, and a unique `payment.ID`.
+
+```go
+import (
+    "fmt"
+    "time"
+    "github.com/yayawallet/ghion-go-sdk/pkg/types"
+)
+
+// Inside your payment handler:
+payment, err := client.InitializePayment(&types.InitializePaymentRequest{
+    Amount:      100,
+    Currency:    "ETB", // Default is ETB
+    Reference:   fmt.Sprintf("order_%d", time.Now().Unix()), // Your internal unique order ID
+    Description: "Purchase of premium coffee",
+    WebhookURL:  os.Getenv("WEBHOOK_URL"),
+    ReturnURL:   "https://your-domain.com/success",
+    CancelURL:   "https://your-domain.com/cancel",
+})
+
+if err != nil {
+    log.Printf("Error initializing payment: %v", err)
+    return
+}
+
+// Optionally fetch full checkout details (for QR codes, specific provider rules, etc.)
+checkoutInfo, err := client.GetCheckout(payment.ID)
+
+fmt.Printf("Payment Initialized. ID: %s", payment.ID)
+// Return payment.ID and checkoutInfo.AvailableChannels to your frontend
+```
+
+### 2. Handling Payment Methods
+
+#### OTP Flow (YaYa Wallet)
+The OTP flow requires sending an OTP to the user's phone, then validating it.
+
+**Step A: Send OTP**
+```go
+otpResponse, err := client.SendOTP(payment.ID, phoneNumber)
+if err != nil {
+    // Handle error
+}
+// Display an input field to the user to enter the 6-digit OTP
+```
+
+**Step B: Validate OTP**
+```go
+validateResponse, err := client.ValidateOTP(payment.ID, otpCode, phoneNumber)
+if err != nil {
+    // Handle error
+}
+if validateResponse.Status == string(ghion.StatusCompleted) {
+    // Payment is successful
+}
+```
+
+#### USSD Flow
+For wallets supporting direct push prompts (USSD):
+
+```go
+result, err := client.SubmitPayment(payment.ID, &types.SubmitPaymentRequest{
+    Channel:       "yayawallet", // or 'telebirr', etc.
+    PhoneNumber:   "0912345678",
+})
+if err != nil {
+    // Handle error
+}
+// User will receive a prompt on their phone to enter their PIN.
+```
+
+#### QR Code Flow
+To display a QR code for the user to scan with their banking app:
+
+```go
+qrPayment, err := client.PayWithQR(payment.ID)
+if err != nil {
+    // Handle error
+}
+// qrPayment.QRImageURL contains the URL to the generated QR code image
+// qrPayment.QRPayload contains the raw string payload for the QR code
+```
+
+### 3. Webhooks Integration
+Webhooks are **mandatory** for robust payment verification. Users might close the browser while a payment is processing, so your server must rely on webhooks to fulfill orders.
+
+**Important:** Webhooks must parse the *raw* request body to verify the cryptographic signature.
+
+```go
+import (
+    "io"
+    "net/http"
+    "github.com/yayawallet/ghion-go-sdk"
+)
+
+func webhookHandler(w http.ResponseWriter, r *http.Request) {
+    signature := r.Header.Get("X-Ghion-Signature")
+    
+    // Read raw body for signature verification
+    body, err := io.ReadAll(r.Body)
+    if err != nil {
+        http.Error(w, "Failed to read body", http.StatusInternalServerError)
+        return
+    }
+
+    event, err := client.ParseWebhook(body, signature)
+    if err != nil {
+        http.Error(w, "Invalid signature", http.StatusUnauthorized)
+        return
+    }
+
+    switch event.Event {
+    case ghion.EventTransactionCompleted:
+        // Fulfill the order! (e.g., mark DB as paid, send email)
+        log.Printf("Payment Success: %s", event.Data.PaymentID)
+    case ghion.EventTransactionFailed:
+        // Handle failure
+        log.Printf("Payment Failed: %s", event.Data.PaymentID)
+    // Handle ghion.EventTransactionExpired, etc...
+    }
+
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte(`{"received": true}`))
+}
+```
+
+---
+
+## Best Practices
+
+1. **Rely on Webhooks, Not Polling:** 
+   Always use Webhooks (`/webhook`) or Server-Sent Events (SSE) driven by webhooks to update the frontend. Avoid setting up frequent polling loops to call `client.GetPaymentStatus()`, as excessive polling can trigger rate limits or interfere with active transactions.
+2. **Raw Body for Webhooks:** 
+   Always pass the raw byte array of the request body to `client.ParseWebhook()`. If your framework parses the body into a struct before the SDK verifies it, the HMAC signature verification will fail.
+3. **Idempotency:** 
+   Webhook events can theoretically be delivered more than once. Ensure your database fulfillment logic checks if an order is already marked as "paid" before granting the user access to the product again.
+4. **Environment Separation:** 
+   Keep a strict separation between Test/Sandbox keys and Production keys.
+
+---
+
+## Common Issues & Fixes
+
+### 1. Error: "Transaction is not in a state awaiting OTP validation"
+**Symptom:** You call `SendOTP`, wait for the user to input the code, call `ValidateOTP`, and receive this error.
+**Cause:** Calling `client.GetPaymentStatus(paymentID)` via a polling interval *while* the OTP is pending. Querying the Ghion API manually during an active OTP session can forcefully reset the transaction state on the gateway's end.
+**Fix:** Remove any background status polling during the OTP flow. Send the OTP, wait for user input, and immediately validate the OTP. Rely on Webhooks for background state changes.
+
+### 2. Webhook Signature Verification Fails
+**Symptom:** `client.ParseWebhook()` returns an "Invalid webhook signature" error.
+**Cause:** The web framework is parsing the request body before it reaches your handler, modifying the raw byte stream. The signature verification requires the exact raw byte string sent by Ghion.
+**Fix:** Ensure you read `r.Body` directly using `io.ReadAll()` before any JSON decoders attempt to parse the request.
+
+### 3. "OTP code is required" error during ValidateOTP
+**Symptom:** The SDK returns a validation error or the API rejects the request stating the OTP code is missing, even when provided.
+**Cause:** In older versions of the SDK, there was a payload key mismatch (`otp` instead of `otp_code`).
+**Fix:** Ensure you are using the latest version of the SDK (`go get -u github.com/yayawallet/ghion-go-sdk`). The SDK internally maps `otpCode` to the correct `otp_code` payload expected by the API.
+
+### 4. Missing Environment Variables
+**Symptom:** The SDK fails to initialize with validation errors.
+**Cause:** The required `APIKey`, `APISecret`, or `Passphrase` are missing or empty.
+**Fix:** Double check that your environment variables are correctly loaded and passed to `ghion.NewClient()`. Use tools like `godotenv` to manage `.env` files in Go.
