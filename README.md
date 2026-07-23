@@ -276,6 +276,8 @@ Contributions are welcome! Please ensure:
 
 Please open an issue to discuss proposed changes before creating a pull request.
 
+For release guidelines, see [RELEASE.md](RELEASE.md).
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
