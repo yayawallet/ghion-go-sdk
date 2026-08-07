@@ -5,7 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-08-07
+
+### Added
+- Complete Bill Payment API support for creating and managing bills
+- `CreateBill` method to create single bills with customer information, due dates, and penalty configurations
+- `CreateBulkBills` method to create multiple bills in a single request for batch billing cycles
+- `ListBills` method to list bills with filters (status, search, cluster, bill_code, date range, pagination)
+- `GetBillStatistics` method to retrieve aggregate counts and amounts for bills
+- `GetBillDashboard` method to get detailed analytics including summary statistics, trends, and breakdowns by cluster/bill code
+- `GetBillDetail` method to retrieve full bill details including penalty configuration, metadata, and payment history
+- `UpdateBill` method to update bill properties (partial update - only provided fields are updated)
+- `DeleteBill` method to delete bills (only bills with no payments can be deleted)
+- `RecordManualPayment` method to record manual payments (cash, bank transfer, etc.) for reconciliation purposes
+- `GetBillPaymentLink` method to generate shareable payment links for bills
+- `GetBillerSettings` method to retrieve biller configuration including biller_code, clusters, bill codes, and webhook settings
+- `UpdateBillerSettings` method to update biller configuration
+- `PublicBillLookup` method for public bill lookup (no authentication) used by bank branches and mobile banking apps
+- `BillStatus` enum (pending, paid, forwarded, cancelled, expired, overdue)
+- `Penalty` interface for late payment penalty configuration
+- Comprehensive bill payment types: CreateBillRequest, BillResponse, BulkCreateBillsRequest, BulkCreateBillsResponse, ListBillsRequest, ListBillsResponse, BillStatistics, BillDashboard, PaymentLinkResponse, PublicBillLookupRequest, PublicBillLookupResponse, BillerSettingsRequest, BillerSettingsResponse, UpdateBillRequest, DeleteBillResponse, RecordManualPaymentRequest, RecordManualPaymentResponse
+- Validators for all bill payment requests with date format validation (Y-m-d), email validation, and penalty configuration validation
+- Bill payment examples and integration tests
+
+### Fixed
+- Fixed signature generation for GET requests to exclude query parameters (matching API specification)
+- Simplified webhook handling by removing redundant wrapper and using webhook package directly
+
+### Security
+- HMAC-SHA256 signature generation and verification
+- Timing-safe comparison for webhook signatures
+- Input validation for all API requests
+- Automatic sensitive data redaction
+
+## [1.0.0] - 2026-07-23
 
 ### Added
 - Initial release of Ghion Go SDK
@@ -24,22 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete test suite
 - Documentation and examples
 - Developer guide
-
-### Security
-- HMAC-SHA256 signature generation and verification
-- Timing-safe comparison for webhook signatures
-- Input validation for all API requests
-- Automatic sensitive data redaction
-
-## [1.0.0] - 2024-01-XX
-
-### Added
-- Initial stable release
-- Full API coverage for payment operations
-- Webhook handling
-- Comprehensive error handling
-- Security features
-- Documentation and examples
 
 ---
 

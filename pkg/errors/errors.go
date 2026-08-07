@@ -122,6 +122,24 @@ func NewPaymentError(message, paymentID string, details map[string]interface{}) 
 	}
 }
 
+// BillError represents bill processing failures
+type BillError struct {
+	*GhionError
+	BillID string
+}
+
+// NewBillError creates a new BillError
+func NewBillError(message, billID string, details map[string]interface{}) *BillError {
+	if details == nil {
+		details = make(map[string]interface{})
+	}
+	details["bill_id"] = billID
+	return &BillError{
+		GhionError: NewGhionError(message, "BILL_ERROR", details),
+		BillID:     billID,
+	}
+}
+
 // WebhookError represents webhook signature verification or processing failures
 type WebhookError struct {
 	*GhionError

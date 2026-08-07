@@ -48,6 +48,12 @@ func TestErrorTypes(t *testing.T) {
 			errorMsg:  "Payment error",
 		},
 		{
+			name:      "BillError",
+			errorType: &BillError{},
+			errorCode: "BILL_ERROR",
+			errorMsg:  "Bill error",
+		},
+		{
 			name:      "WebhookError",
 			errorType: &WebhookError{},
 			errorCode: "WEBHOOK_ERROR",
@@ -78,6 +84,8 @@ func TestErrorTypes(t *testing.T) {
 				err = NewNetworkError(tt.errorMsg, nil)
 			case *PaymentError:
 				err = NewPaymentError(tt.errorMsg, "payment_12345", nil)
+			case *BillError:
+				err = NewBillError(tt.errorMsg, "bill_12345", nil)
 			case *WebhookError:
 				err = NewWebhookError(tt.errorMsg, nil)
 			case *RateLimitError:
@@ -103,6 +111,8 @@ func TestErrorTypes(t *testing.T) {
 			case *NetworkError:
 				ghionErr = e.GhionError
 			case *PaymentError:
+				ghionErr = e.GhionError
+			case *BillError:
 				ghionErr = e.GhionError
 			case *WebhookError:
 				ghionErr = e.GhionError
@@ -148,7 +158,7 @@ func TestAPIErrorWithStatusCode(t *testing.T) {
 
 func TestRateLimitErrorWithRetryAfter(t *testing.T) {
 	err := NewRateLimitError("Rate limit exceeded", 60)
-	
+
 	retryAfter, ok := err.GhionError.Details["retry_after"]
 	if !ok {
 		t.Errorf("Expected retry_after in details")
@@ -157,5 +167,23 @@ func TestRateLimitErrorWithRetryAfter(t *testing.T) {
 
 	if retryAfter != 60 {
 		t.Errorf("Expected retry after 60 but got %v", retryAfter)
+	}
+}
+
+func TestBillErrorWithBillID(t *testing.T) {
+	err := NewBillError("Bill not found", "bill_12345", nil)
+
+	billID, ok := err.GhionError.Details["bill_id"]
+	if !ok {
+		t.Errorf("Expected bill_id in details")
+		return
+	}
+
+	if billID != "bill_12345" {
+		t.Errorf("Expected bill ID bill_12345 but got %v", billID)
+	}
+
+	if err.BillID != "bill_12345" {
+		t.Errorf("Expected BillID field to be bill_12345 but got %s", err.BillID)
 	}
 }

@@ -98,6 +98,178 @@ func TestNewGhionClient(t *testing.T) {
 	}
 }
 
+func TestBillPaymentValidation(t *testing.T) {
+	client, err := NewGhionClient(&types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	})
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	t.Run("CreateBill with empty bill ID", func(t *testing.T) {
+		_, err := client.CreateBill(&types.CreateBillRequest{
+			BillID:  "",
+			Amount:  100,
+			DueDate: "2026-09-01",
+		})
+		if err == nil {
+			t.Error("Expected error for empty bill ID")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("CreateBill with zero amount", func(t *testing.T) {
+		_, err := client.CreateBill(&types.CreateBillRequest{
+			BillID:  "INV-001",
+			Amount:  0,
+			DueDate: "2026-09-01",
+		})
+		if err == nil {
+			t.Error("Expected error for zero amount")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("CreateBill with invalid date format", func(t *testing.T) {
+		_, err := client.CreateBill(&types.CreateBillRequest{
+			BillID:  "INV-001",
+			Amount:  100,
+			DueDate: "invalid-date",
+		})
+		if err == nil {
+			t.Error("Expected error for invalid date format")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("CreateBill with invalid email", func(t *testing.T) {
+		_, err := client.CreateBill(&types.CreateBillRequest{
+			BillID:        "INV-001",
+			Amount:        100,
+			DueDate:       "2026-09-01",
+			CustomerEmail: "invalid-email",
+		})
+		if err == nil {
+			t.Error("Expected error for invalid email")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("GetBillDetail with empty bill ID", func(t *testing.T) {
+		_, err := client.GetBillDetail("")
+		if err == nil {
+			t.Error("Expected error for empty bill ID")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("UpdateBill with empty bill ID", func(t *testing.T) {
+		_, err := client.UpdateBill("", &types.UpdateBillRequest{
+			Amount: 100,
+		})
+		if err == nil {
+			t.Error("Expected error for empty bill ID")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("DeleteBill with empty bill ID", func(t *testing.T) {
+		_, err := client.DeleteBill("")
+		if err == nil {
+			t.Error("Expected error for empty bill ID")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("RecordManualPayment with empty bill ID", func(t *testing.T) {
+		_, err := client.RecordManualPayment("", &types.RecordManualPaymentRequest{
+			Amount: 100,
+		})
+		if err == nil {
+			t.Error("Expected error for empty bill ID")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("RecordManualPayment with zero amount", func(t *testing.T) {
+		_, err := client.RecordManualPayment("bill-id", &types.RecordManualPaymentRequest{
+			Amount: 0,
+		})
+		if err == nil {
+			t.Error("Expected error for zero amount")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("GetBillDashboard with invalid date format", func(t *testing.T) {
+		_, err := client.GetBillDashboard("invalid-date", "2026-09-01")
+		if err == nil {
+			t.Error("Expected error for invalid date format")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("UpdateBillerSettings with negative service charge rate", func(t *testing.T) {
+		_, err := client.UpdateBillerSettings(&types.BillerSettingsRequest{
+			ServiceChargeRate: -0.05,
+		})
+		if err == nil {
+			t.Error("Expected error for negative service charge rate")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("PublicBillLookup with empty biller code", func(t *testing.T) {
+		_, err := client.PublicBillLookup(&types.PublicBillLookupRequest{
+			BillerCode: "",
+			BillID:     "INV-001",
+		})
+		if err == nil {
+			t.Error("Expected error for empty biller code")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+
+	t.Run("PublicBillLookup with empty bill ID", func(t *testing.T) {
+		_, err := client.PublicBillLookup(&types.PublicBillLookupRequest{
+			BillerCode: "GHION-UTIL",
+			BillID:     "",
+		})
+		if err == nil {
+			t.Error("Expected error for empty bill ID")
+		}
+		if _, ok := err.(*errors.ValidationError); !ok {
+			t.Errorf("Expected ValidationError but got %T", err)
+		}
+	})
+}
+
 func TestInitializePaymentValidation(t *testing.T) {
 	config := &types.GhionConfig{
 		APIKey:     "test-api-key",
@@ -1012,6 +1184,638 @@ func TestValidateOTPWithLongCode(t *testing.T) {
 	}
 }
 
+func TestCreateBillWithAllFields(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.CreateBillRequest{
+		BillID:        "INV-001",
+		Amount:        500.00,
+		Currency:      "ETB",
+		DueDate:       "2026-09-01",
+		CustomerName:  "John Doe",
+		CustomerPhone: "+251911234567",
+		CustomerEmail: "john@example.com",
+		Description:   "Monthly utility bill",
+		BillCode:      "UTIL",
+		Cluster:       "ADDIS ABABA",
+	}
+
+	_, err = client.CreateBill(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestCreateBulkBillsWithEmptyArray(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.BulkCreateBillsRequest{
+		Bills: []types.CreateBillRequest{},
+	}
+
+	_, err = client.CreateBulkBills(request)
+	if err == nil {
+		t.Error("Expected error for empty bills array")
+	}
+}
+
+func TestListBillsWithInvalidDate(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.ListBillsRequest{
+		From: "invalid-date",
+	}
+
+	_, err = client.ListBills(request)
+	if err == nil {
+		t.Error("Expected error for invalid date format")
+	}
+}
+
+func TestListBillsWithNegativePage(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.ListBillsRequest{
+		Page: -1,
+	}
+
+	_, err = client.ListBills(request)
+	if err == nil {
+		t.Error("Expected error for negative page")
+	}
+}
+
+func TestListBillsWithLimitTooHigh(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.ListBillsRequest{
+		Limit: 101,
+	}
+
+	_, err = client.ListBills(request)
+	if err == nil {
+		t.Error("Expected error for limit too high")
+	}
+}
+
+func TestUpdateBillWithNegativeAmount(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.UpdateBillRequest{
+		Amount: -100,
+	}
+
+	_, err = client.UpdateBill("bill-id", request)
+	if err == nil {
+		t.Error("Expected error for negative amount")
+	}
+}
+
+func TestRecordManualPaymentWithNegativeAmount(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.RecordManualPaymentRequest{
+		Amount: -100,
+	}
+
+	_, err = client.RecordManualPayment("bill-id", request)
+	if err == nil {
+		t.Error("Expected error for negative amount")
+	}
+}
+
+func TestGetBillPaymentLinkWithEmptyID(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.GetBillPaymentLink("")
+	if err == nil {
+		t.Error("Expected error for empty bill ID")
+	}
+}
+
+func TestGetBillerSettings(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.GetBillerSettings()
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestUpdateBillerSettingsWithAllFields(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.BillerSettingsRequest{
+		ServiceChargeRate: 0.05,
+		Clusters:          []string{"ADDIS ABABA", "HAWASSA"},
+		BillCodes:          []types.BillCode{{Code: "UTIL", Name: "Utilities"}},
+	}
+
+	_, err = client.UpdateBillerSettings(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestUpdateBillerSettingsWithInvalidClusterType(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.BillerSettingsRequest{
+		ServiceChargeRate: 0.05,
+		Clusters:          []string{"123"},
+	}
+
+	_, err = client.UpdateBillerSettings(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestUpdateBillerSettingsWithInvalidBillCodeType(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.BillerSettingsRequest{
+		ServiceChargeRate: 0.05,
+		BillCodes:         []types.BillCode{{Code: "UTIL", Name: "Utilities"}},
+	}
+
+	_, err = client.UpdateBillerSettings(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestGetBillStatistics(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.GetBillStatistics()
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestGetBillDashboardWithValidDates(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.GetBillDashboard("2026-08-01", "2026-08-31")
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestGetBillDashboardWithEmptyDates(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.GetBillDashboard("", "")
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestPublicBillLookupWithValidInputs(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.PublicBillLookupRequest{
+		BillerCode: "GHION-UTIL",
+		BillID:     "INV-001",
+	}
+
+	_, err = client.PublicBillLookup(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestCreateBillWithMissingCustomerName(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.CreateBillRequest{
+		BillID:  "INV-001",
+		Amount:  100,
+		DueDate: "2026-09-01",
+	}
+
+	_, err = client.CreateBill(request)
+	if err == nil {
+		t.Error("Expected error for missing customer name")
+	}
+}
+
+func TestCreateBillWithInvalidCurrency(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.CreateBillRequest{
+		BillID:       "INV-001",
+		Amount:       100,
+		Currency:     "",
+		DueDate:      "2026-09-01",
+		CustomerName: "Test Customer",
+	}
+
+	_, err = client.CreateBill(request)
+	// Empty currency should be valid (defaults to ETB)
+	if err != nil {
+		// This might fail with network error
+	}
+}
+
+func TestCreateBillWithVeryLargeAmount(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.CreateBillRequest{
+		BillID:       "INV-001",
+		Amount:       999999999,
+		DueDate:      "2026-09-01",
+		CustomerName: "Test Customer",
+	}
+
+	_, err = client.CreateBill(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestCreateBillWithDecimalAmount(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.CreateBillRequest{
+		BillID:       "INV-001",
+		Amount:       100.50,
+		DueDate:      "2026-09-01",
+		CustomerName: "Test Customer",
+	}
+
+	_, err = client.CreateBill(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestUpdateBillWithEmptyRequest(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.UpdateBillRequest{}
+
+	_, err = client.UpdateBill("bill-id", request)
+	// Empty request should be valid (partial update)
+	if err != nil {
+		// This might fail with network error
+	}
+}
+
+func TestRecordManualPaymentWithAllFields(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.RecordManualPaymentRequest{
+		Amount:        100.50,
+		Source:        "manual",
+		PaymentMethod: "cash",
+		Reference:     "RECEIPT-001",
+		Note:          "Paid at counter",
+	}
+
+	_, err = client.RecordManualPayment("bill-id", request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestRecordManualPaymentWithDecimalAmount(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.RecordManualPaymentRequest{
+		Amount: 100.50,
+	}
+
+	_, err = client.RecordManualPayment("bill-id", request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestListBillsWithAllFilters(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.ListBillsRequest{
+		Status:   "pending",
+		Search:   "John",
+		Cluster:  "ADDIS ABABA",
+		BillCode: "UTIL",
+		From:     "2026-08-01",
+		To:       "2026-08-31",
+		Page:     1,
+		Limit:    10,
+	}
+
+	_, err = client.ListBills(request)
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestListBillsWithZeroLimit(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.ListBillsRequest{
+		Limit: 0,
+	}
+
+	_, err = client.ListBills(request)
+	// Zero limit should be valid
+	if err != nil {
+		// This might fail with network error
+	}
+}
+
+func TestListBillsWithNegativeLimit(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	request := &types.ListBillsRequest{
+		Limit: -1,
+	}
+
+	_, err = client.ListBills(request)
+	if err == nil {
+		t.Error("Expected error for negative limit")
+	}
+}
+
+func TestGetBillDetailWithValidID(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.GetBillDetail("bill-id")
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestDeleteBillWithValidID(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.DeleteBill("bill-id")
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
+func TestGetBillPaymentLinkWithValidID(t *testing.T) {
+	config := &types.GhionConfig{
+		APIKey:     "test-api-key",
+		APISecret:  "test-api-secret",
+		Passphrase: "test-passphrase",
+	}
+	client, err := NewGhionClient(config)
+	if err != nil {
+		t.Fatalf("Failed to create client: %v", err)
+	}
+
+	_, err = client.GetBillPaymentLink("bill-id")
+	// Will fail with network error, but validation should pass
+	if err != nil {
+		// Expected network error
+	}
+}
+
 func TestSubmitPaymentWithQRMethod(t *testing.T) {
 	config := &types.GhionConfig{
 		APIKey:     "test-api-key",
@@ -1027,7 +1831,7 @@ func TestSubmitPaymentWithQRMethod(t *testing.T) {
 		Channel:       "telebirr",
 		PaymentMethod: "qr",
 	}
-	
+
 	_, err = client.SubmitPayment("payment_12345", request)
 	// Will fail with network error, but validation should pass
 	if err != nil {

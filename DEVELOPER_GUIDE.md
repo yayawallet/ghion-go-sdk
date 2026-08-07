@@ -11,7 +11,9 @@ Welcome to the official developer guide for the `ghion-go-sdk`. This document pr
      - [OTP Flow (YaYa Wallet)](#otp-flow-yaya-wallet)
      - [USSD Flow](#ussd-flow)
      - [QR Code Flow](#qr-code-flow)
+   - [Bill Payment API](#4-bill-payment-api)
    - [Webhooks Integration](#3-webhooks-integration)
+   - [Error Handling](#5-error-handling)
 4. [Best Practices](#best-practices)
 5. [Common Issues & Fixes](#common-issues--fixes)
 
@@ -158,7 +160,229 @@ if err != nil {
 // qrPayment.QRPayload contains the raw string payload for the QR code
 ```
 
-### 3. Webhooks Integration
+### 4. Bill Payment API
+
+The Bill Payment API allows you to create and manage bills for recurring payments, utility bills, invoices, and other billing scenarios.
+
+#### Create a Bill
+
+Create a single bill with customer information:
+
+```go
+bill, err := client.CreateBill(&types.CreateBillRequest{
+    BillID:        "INV-12345",
+    Amount:        500.00,
+    Currency:      "ETB",
+    DueDate:       "2026-09-01",
+    CustomerName:  "John Doe",
+    CustomerPhone: "+251911234567",
+    CustomerEmail: "john@example.com",
+    Description:   "Monthly utility bill",
+    BillCode:      "UTIL",
+    Cluster:       "ADDIS ABABA",
+})
+if err != nil {
+    // Handle error
+}
+```
+
+**Required Parameters:**
+- `billID`: Unique bill identifier
+- `amount`: Bill amount
+- `dueDate`: Due date in Y-m-d format
+- `customerName`: Customer name
+
+**Optional Parameters:**
+- `currency`: Currency code (default: ETB)
+- `customerPhone`: Customer phone number
+- `customerEmail`: Customer email
+- `description`: Bill description
+- `billCode`: Bill code for categorization
+- `cluster`: Geographic cluster
+
+#### Create Bulk Bills
+
+Create multiple bills in a single request for batch billing cycles:
+
+```go
+response, err := client.CreateBulkBills(&types.BulkCreateBillsRequest{
+    Bills: []types.CreateBillRequest{
+        {
+            BillID:       "BULK-1",
+            Amount:       300.00,
+            DueDate:      "2026-09-01",
+            CustomerName: "Customer 1",
+        },
+        {
+            BillID:       "BULK-2",
+            Amount:       400.00,
+            DueDate:      "2026-09-01",
+            CustomerName: "Customer 2",
+        },
+    },
+})
+if err != nil {
+    // Handle error
+}
+fmt.Printf("Created: %d, Errors: %d\n", response.CreatedCount, response.ErrorCount)
+```
+
+#### List Bills
+
+List bills with filters for pagination and search:
+
+```go
+response, err := client.ListBills(&types.ListBillsRequest{
+    Status:   "pending",
+    Page:     1,
+    Limit:    10,
+    From:     "2026-08-01",
+    To:       "2026-08-31",
+})
+if err != nil {
+    // Handle error
+}
+
+for _, bill := range response.Items {
+    fmt.Printf("%s: %.2f %s (%s)\n", bill.BillID, bill.Amount, bill.Currency, bill.Status)
+}
+```
+
+**Filter Parameters:**
+- `status`: Filter by status (pending, paid, forwarded, cancelled, expired, overdue)
+- `search`: Search by customer name or bill ID
+- `cluster`: Filter by cluster
+- `billCode`: Filter by bill code
+- `from`: Start date (Y-m-d format)
+- `to`: End date (Y-m-d format)
+- `page`: Page number
+- `limit`: Items per page (max 100)
+
+#### Get Bill Statistics
+
+Get aggregate statistics for all bills:
+
+```go
+stats, err := client.GetBillStatistics()
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Pending: %d\n", stats.Pending)
+fmt.Printf("Paid: %d\n", stats.Paid)
+fmt.Printf("Total Amount: %.2f\n", stats.TotalAmount)
+```
+
+#### Get Bill Dashboard
+
+Get detailed analytics including trends and breakdowns:
+
+```go
+dashboard, err := client.GetBillDashboard("2026-08-01", "2026-08-31")
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Total Bills: %d\n", dashboard.Summary.TotalBills)
+fmt.Printf("Pending: %d\n", dashboard.Summary.Pending)
+fmt.Printf("Paid: %d\n", dashboard.Summary.Paid)
+```
+
+#### Get Bill Details
+
+Retrieve full bill details including payment history:
+
+```go
+detail, err := client.GetBillDetail(bill.ID)
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Customer: %s\n", detail.CustomerName)
+fmt.Printf("Amount: %.2f\n", detail.Amount)
+fmt.Printf("Status: %s\n", detail.Status)
+fmt.Printf("Payments: %d\n", len(detail.Payments))
+```
+
+#### Update Bill
+
+Update bill properties (partial update - only provided fields are updated):
+
+```go
+updatedBill, err := client.UpdateBill(bill.ID, &types.UpdateBillRequest{
+    Amount:      600.00,
+    Description: "Updated description",
+    DueDate:     "2026-09-15",
+})
+if err != nil {
+    // Handle error
+}
+```
+
+#### Record Manual Payment
+
+Record manual payments (cash, bank transfer, etc.) for reconciliation:
+
+```go
+payment, err := client.RecordManualPayment(bill.ID, &types.RecordManualPaymentRequest{
+    Amount:        100.00,
+    Source:        "manual",
+    PaymentMethod: "cash",
+    Reference:     "RECEIPT-001",
+    Note:          "Paid at counter",
+})
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Bill Status: %s\n", payment.BillStatus)
+fmt.Printf("Balance Due: %.2f\n", payment.BalanceDue)
+```
+
+#### Get Bill Payment Link
+
+Generate a shareable payment link for bills:
+
+```go
+link, err := client.GetBillPaymentLink(bill.ID)
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Payment Link: %s\n", link.CheckoutURL)
+// Share this link with customers via SMS, email, etc.
+```
+
+#### Delete Bill
+
+Delete bills (only bills with no payments can be deleted):
+
+```go
+result, err := client.DeleteBill(bill.ID)
+if err != nil {
+    // Handle error
+}
+fmt.Printf("Message: %s\n", result.Message)
+```
+
+#### Public Bill Lookup
+
+Lookup bills without authentication (for public-facing apps like bank branches or mobile banking):
+
+```go
+publicBill, err := client.PublicBillLookup(&types.PublicBillLookupRequest{
+    BillerCode: "BILLER001",
+    BillID:     "INV-12345",
+})
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Payment Status: %s\n", publicBill.PaymentStatus)
+fmt.Printf("Amount Due: %.2f\n", publicBill.AmountDue)
+```
+
+### 5. Webhooks Integration
 Webhooks are **mandatory** for robust payment verification. Users might close the browser while a payment is processing, so your server must rely on webhooks to fulfill orders.
 
 **Important:** Webhooks must parse the *raw* request body to verify the cryptographic signature.
@@ -200,6 +424,66 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
     w.Write([]byte(`{"received": true}`))
 }
 ```
+
+### 6. Error Handling
+
+The SDK provides detailed error information through custom error types. Always handle errors appropriately to provide good user experience and debugging information.
+
+```go
+import "github.com/yayawallet/ghion-go-sdk/pkg/errors"
+
+payment, err := client.InitializePayment(&types.InitializePaymentRequest{
+    Amount:    100,
+    Reference: "order-123",
+})
+
+if err != nil {
+    // Check error type for specific handling
+    switch e := err.(type) {
+    case *errors.ValidationError:
+        // Input validation failed (invalid phone number, missing required fields, etc.)
+        log.Printf("Validation Error: %s (Field: %s)", e.Message, e.Field)
+        // Show user-friendly error message
+        return fmt.Errorf("Invalid input: %s", e.Message)
+    case *errors.NetworkError:
+        // Network connectivity issues
+        log.Printf("Network Error: %s", e.Message)
+        // Implement retry logic or show connection error
+        return fmt.Errorf("Connection error. Please try again.")
+    case *errors.APIError:
+        // API returned an error (invalid credentials, insufficient funds, etc.)
+        log.Printf("API Error: %s (Status: %d)", e.Message, e.StatusCode)
+        // Handle specific API errors
+        if e.StatusCode == 401 {
+            return fmt.Errorf("Authentication failed. Check your API credentials.")
+        }
+        return fmt.Errorf("Payment error: %s", e.Message)
+    case *errors.RateLimitError:
+        // Too many requests
+        log.Printf("Rate Limit Error: %s", e.Message)
+        // Implement exponential backoff
+        return fmt.Errorf("Too many requests. Please wait and try again.")
+    default:
+        // Unknown error
+        log.Printf("Unknown Error: %v", err)
+        return fmt.Errorf("An unexpected error occurred.")
+    }
+}
+```
+
+**Common Error Scenarios:**
+
+1. **ValidationError**: Invalid input parameters (e.g., invalid phone number format, missing required fields, invalid email format)
+2. **NetworkError**: Network connectivity issues, timeout, or DNS resolution failures
+3. **APIError**: API returned an error (401 for invalid credentials, 400 for bad request, 500 for server errors)
+4. **RateLimitError**: Too many requests within a short time period (implement exponential backoff)
+
+**Best Practices for Error Handling:**
+- Log errors with context for debugging
+- Show user-friendly error messages to end users
+- Implement retry logic for transient errors (network issues, rate limits)
+- Validate user input before making API calls to prevent validation errors
+- Never expose sensitive information (API secrets, internal details) in error messages
 
 ---
 

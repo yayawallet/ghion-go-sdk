@@ -28,6 +28,7 @@ package ghion
 
 import (
 	"github.com/yayawallet/ghion-go-sdk/pkg/client"
+	"github.com/yayawallet/ghion-go-sdk/pkg/errors"
 	"github.com/yayawallet/ghion-go-sdk/pkg/types"
 )
 
@@ -36,6 +37,30 @@ type Config = types.GhionConfig
 
 // Client is the main SDK client for Ghion Finances payment gateway
 type Client = client.GhionClient
+
+// Error types
+type (
+	// GhionError is the base error class for all SDK errors
+	GhionError = errors.GhionError
+	// ConfigurationError represents invalid SDK configuration
+	ConfigurationError = errors.ConfigurationError
+	// AuthenticationError represents invalid credentials or signature
+	AuthenticationError = errors.AuthenticationError
+	// APIError represents a failed HTTP request
+	APIError = errors.APIError
+	// ValidationError represents invalid input parameters
+	ValidationError = errors.ValidationError
+	// NetworkError represents connection or timeout issues
+	NetworkError = errors.NetworkError
+	// PaymentError represents payment processing failures
+	PaymentError = errors.PaymentError
+	// BillError represents bill processing failures
+	BillError = errors.BillError
+	// WebhookError represents webhook signature verification or processing failures
+	WebhookError = errors.WebhookError
+	// RateLimitError represents API rate limit exceeded
+	RateLimitError = errors.RateLimitError
+)
 
 // PaymentStatus represents the status of a payment
 type PaymentStatus = types.PaymentStatus
@@ -130,3 +155,24 @@ func NewClient(config *Config) (*Client, error) {
 	return client.NewGhionClient(config)
 }
 
+// Error constructors
+var (
+	// NewConfigurationError creates a new ConfigurationError
+	NewConfigurationError = errors.NewConfigurationError
+	// NewAuthenticationError creates a new AuthenticationError
+	NewAuthenticationError = errors.NewAuthenticationError
+	// NewAPIError creates a new APIError
+	NewAPIError = errors.NewAPIError
+	// NewValidationError creates a new ValidationError
+	NewValidationError = errors.NewValidationError
+	// NewNetworkError creates a new NetworkError
+	NewNetworkError = errors.NewNetworkError
+	// NewPaymentError creates a new PaymentError
+	NewPaymentError = errors.NewPaymentError
+	// NewBillError creates a new BillError
+	NewBillError = errors.NewBillError
+	// NewWebhookError creates a new WebhookError
+	NewWebhookError = errors.NewWebhookError
+	// NewRateLimitError creates a new RateLimitError
+	NewRateLimitError = errors.NewRateLimitError
+)

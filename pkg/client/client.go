@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/yayawallet/ghion-go-sdk/pkg/errors"
 	"github.com/yayawallet/ghion-go-sdk/pkg/types"
 	"github.com/yayawallet/ghion-go-sdk/pkg/utils"
+	"github.com/yayawallet/ghion-go-sdk/pkg/webhook"
 )
 
 const (
@@ -33,7 +35,7 @@ type GhionClient struct {
 	checkoutBaseURL string
 	timeout         time.Duration
 	httpClient      *http.Client
-	webhookHandler  *WebhookHandler
+	webhookHandler  *webhook.WebhookHandler
 }
 
 // NewGhionClient creates a new Ghion client with the given configuration
@@ -74,7 +76,7 @@ func NewGhionClient(config *types.GhionConfig) (*GhionClient, error) {
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
-		webhookHandler: NewWebhookHandler(config.APISecret),
+		webhookHandler: webhook.NewWebhookHandler(config.APISecret),
 	}
 
 	return client, nil
@@ -271,8 +273,373 @@ func (c *GhionClient) ParseWebhook(rawBody []byte, signature string) (*types.Web
 }
 
 // GetWebhookHandler returns the webhook handler for advanced webhook processing
-func (c *GhionClient) GetWebhookHandler() *WebhookHandler {
+func (c *GhionClient) GetWebhookHandler() *webhook.WebhookHandler {
 	return c.webhookHandler
+}
+
+// CreateBill creates a single bill with customer information, due dates, and optional penalty configuration
+// request: Bill creation parameters
+// Returns: Created bill response
+func (c *GhionClient) CreateBill(request *types.CreateBillRequest) (*types.BillResponse, error) {
+	if err := utils.ValidateCreateBillRequest(request.BillID, request.Amount, request.DueDate, request.CustomerEmail); err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"bill_id":    request.BillID,
+		"amount":     request.Amount,
+		"currency":   request.Currency,
+		"due_date":   request.DueDate,
+		"start_date": request.StartDate,
+		"expires_date": request.ExpiresDate,
+		"customer_name": request.CustomerName,
+		"customer_phone": request.CustomerPhone,
+		"customer_email": request.CustomerEmail,
+		"customer_id": request.CustomerID,
+		"description": request.Description,
+		"bill_code": request.BillCode,
+		"cluster": request.Cluster,
+		"penalty": request.Penalty,
+		"metadata": request.Metadata,
+	}
+
+	var response types.BillResponse
+	if err := c.apiRequest("POST", "/dashboard/bills", body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// CreateBulkBills creates multiple bills in a single request for batch billing cycles
+// request: Bulk bill creation parameters
+// Returns: Bulk bill creation response
+func (c *GhionClient) CreateBulkBills(request *types.BulkCreateBillsRequest) (*types.BulkCreateBillsResponse, error) {
+	if err := utils.ValidateBulkCreateBillsRequest(convertToInterfaceSlice(request.Bills)); err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"bills": request.Bills,
+	}
+
+	var response types.BulkCreateBillsResponse
+	if err := c.apiRequest("POST", "/dashboard/bills/bulk", body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// ListBills lists bills with optional filters and pagination
+// request: List bills parameters
+// Returns: List bills response
+func (c *GhionClient) ListBills(request *types.ListBillsRequest) (*types.ListBillsResponse, error) {
+	if err := utils.ValidateListBillsRequest(request.Status, request.Search, request.Cluster, request.BillCode, request.From, request.To, request.Page, request.Limit); err != nil {
+		return nil, err
+	}
+
+	params := make(map[string]string)
+	if request.Status != "" {
+		params["status"] = request.Status
+	}
+	if request.Search != "" {
+		params["search"] = request.Search
+	}
+	if request.Cluster != "" {
+		params["cluster"] = request.Cluster
+	}
+	if request.BillCode != "" {
+		params["bill_code"] = request.BillCode
+	}
+	if request.From != "" {
+		params["from"] = request.From
+	}
+	if request.To != "" {
+		params["to"] = request.To
+	}
+	if request.Page > 0 {
+		params["page"] = strconv.Itoa(request.Page)
+	}
+	if request.Limit > 0 {
+		params["limit"] = strconv.Itoa(request.Limit)
+	}
+
+	var response types.ListBillsResponse
+	path := "/dashboard/bills"
+	if len(params) > 0 {
+		query := url.Values{}
+		for k, v := range params {
+			query.Set(k, v)
+		}
+		path += "?" + query.Encode()
+	}
+
+	if err := c.apiRequest("GET", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetBillStatistics retrieves aggregate counts and amounts for bills
+// Returns: Bill statistics
+func (c *GhionClient) GetBillStatistics() (*types.BillStatistics, error) {
+	var response types.BillStatistics
+	if err := c.apiRequest("GET", "/dashboard/bills/statistics", nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetBillDashboard retrieves detailed analytics including summary statistics, trends, and breakdowns by cluster and bill code
+// from: Start date (Y-m-d format)
+// to: End date (Y-m-d format)
+// Returns: Bill dashboard analytics
+func (c *GhionClient) GetBillDashboard(from, to string) (*types.BillDashboard, error) {
+	if err := utils.ValidateBillDashboardRequest(from, to); err != nil {
+		return nil, err
+	}
+
+	params := make(map[string]string)
+	if from != "" {
+		params["from"] = from
+	}
+	if to != "" {
+		params["to"] = to
+	}
+
+	var response types.BillDashboard
+	path := "/dashboard/bills/dashboard"
+	if len(params) > 0 {
+		query := url.Values{}
+		for k, v := range params {
+			query.Set(k, v)
+		}
+		path += "?" + query.Encode()
+	}
+
+	if err := c.apiRequest("GET", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetBillPaymentLink generates a shareable payment link for a bill
+// billID: Bill ID
+// Returns: Payment link response
+func (c *GhionClient) GetBillPaymentLink(billID string) (*types.PaymentLinkResponse, error) {
+	if err := utils.ValidatePaymentID(billID); err != nil {
+		return nil, err
+	}
+
+	var response types.PaymentLinkResponse
+	path := fmt.Sprintf("/dashboard/bills/%s/checkout-url", billID)
+	if err := c.apiRequest("GET", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// PublicBillLookup looks up bills by biller code and bill number (public endpoint, no authentication)
+// request: Public lookup parameters
+// Returns: Bill information
+func (c *GhionClient) PublicBillLookup(request *types.PublicBillLookupRequest) (*types.PublicBillLookupResponse, error) {
+	if err := utils.ValidatePublicBillLookupRequest(request.BillerCode, request.BillID); err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"biller_code": request.BillerCode,
+		"bill_id": request.BillID,
+	}
+
+	var response types.PublicBillLookupResponse
+	if err := c.apiRequest("POST", "/public/bill/find", body, &response, "", true); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetBillDetail retrieves full bill details including penalty configuration, metadata, and payment history
+// billID: Bill ID
+// Returns: Bill detail with full information
+func (c *GhionClient) GetBillDetail(billID string) (*types.BillResponse, error) {
+	if err := utils.ValidateBillID(billID); err != nil {
+		return nil, err
+	}
+
+	var response types.BillResponse
+	path := fmt.Sprintf("/dashboard/bills/%s", billID)
+	if err := c.apiRequest("GET", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// UpdateBill updates bill properties (partial update - only provided fields are updated)
+// billID: Bill ID
+// request: Fields to update
+// Returns: Updated bill detail
+func (c *GhionClient) UpdateBill(billID string, request *types.UpdateBillRequest) (*types.BillResponse, error) {
+	if err := utils.ValidateBillID(billID); err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"amount": request.Amount,
+		"currency": request.Currency,
+		"due_date": request.DueDate,
+		"start_date": request.StartDate,
+		"expires_date": request.ExpiresDate,
+		"customer_name": request.CustomerName,
+		"customer_phone": request.CustomerPhone,
+		"customer_email": request.CustomerEmail,
+		"customer_id": request.CustomerID,
+		"description": request.Description,
+		"bill_code": request.BillCode,
+		"cluster": request.Cluster,
+		"penalty": request.Penalty,
+		"metadata": request.Metadata,
+	}
+
+	// Remove nil values from body
+	for k, v := range body {
+		if v == nil || (fmt.Sprintf("%v", v) == "<nil>") {
+			delete(body, k)
+		}
+	}
+
+	var response types.BillResponse
+	path := fmt.Sprintf("/dashboard/bills/%s", billID)
+	if err := c.apiRequest("PUT", path, body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// DeleteBill deletes a bill (only bills with no payments can be deleted)
+// billID: Bill ID
+// Returns: Deletion confirmation message
+func (c *GhionClient) DeleteBill(billID string) (*types.DeleteBillResponse, error) {
+	if err := utils.ValidateBillID(billID); err != nil {
+		return nil, err
+	}
+
+	var response types.DeleteBillResponse
+	path := fmt.Sprintf("/dashboard/bills/%s", billID)
+	if err := c.apiRequest("DELETE", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// RecordManualPayment records manual payments (cash, bank transfer, etc.) for reconciliation purposes
+// This does not process an actual payment - it only updates the bill's balance and status
+// billID: Bill ID
+// request: Manual payment details
+// Returns: Payment record with updated bill status
+func (c *GhionClient) RecordManualPayment(billID string, request *types.RecordManualPaymentRequest) (*types.RecordManualPaymentResponse, error) {
+	if err := utils.ValidateBillID(billID); err != nil {
+		return nil, err
+	}
+	if err := utils.ValidateRecordManualPaymentRequest(request.Amount); err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"amount": request.Amount,
+		"source": request.Source,
+		"payment_method": request.PaymentMethod,
+		"reference": request.Reference,
+		"note": request.Note,
+	}
+
+	// Set defaults
+	if body["source"] == "" {
+		body["source"] = "manual"
+	}
+	if body["payment_method"] == "" {
+		body["payment_method"] = "cash"
+	}
+
+	var response types.RecordManualPaymentResponse
+	path := fmt.Sprintf("/dashboard/bills/%s/payments", billID)
+	if err := c.apiRequest("POST", path, body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetBillerSettings retrieves biller configuration including biller_code, clusters, bill codes, and webhook settings
+// Returns: Biller settings
+func (c *GhionClient) GetBillerSettings() (*types.BillerSettingsResponse, error) {
+	var response types.BillerSettingsResponse
+	if err := c.apiRequest("GET", "/dashboard/biller-settings", nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// UpdateBillerSettings updates biller configuration
+// request: Biller settings to update
+// Returns: Updated biller settings
+func (c *GhionClient) UpdateBillerSettings(request *types.BillerSettingsRequest) (*types.BillerSettingsResponse, error) {
+	if err := utils.ValidateBillerSettingsRequest(request.ServiceChargeRate, convertToInterfaceSlice(request.Clusters), convertToInterfaceSlice(request.BillCodes)); err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"biller_name": request.BillerName,
+		"biller_category": request.BillerCategory,
+		"biller_description": request.BillerDescription,
+		"icon_url": request.IconURL,
+		"service_charge_rate": request.ServiceChargeRate,
+		"service_charge_type": request.ServiceChargeType,
+		"min_service_charge": request.MinServiceCharge,
+		"max_service_charge": request.MaxServiceCharge,
+		"service_charge_ranges": request.ServiceChargeRanges,
+		"clusters": request.Clusters,
+		"bill_codes": request.BillCodes,
+		"webhook_url": request.WebhookURL,
+		"webhook_secret": request.WebhookSecret,
+		"settlement_bank_code": request.SettlementBankCode,
+		"settlement_account_number": request.SettlementAccountNumber,
+		"settlement_account_name": request.SettlementAccountName,
+		"settlement_accounts": request.SettlementAccounts,
+	}
+
+	var response types.BillerSettingsResponse
+	if err := c.apiRequest("PUT", "/dashboard/biller-settings", body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// Helper function to convert slice to interface slice
+func convertToInterfaceSlice(slice interface{}) []interface{} {
+	if slice == nil {
+		return nil
+	}
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice {
+		return nil
+	}
+	result := make([]interface{}, v.Len())
+	for i := 0; i < v.Len(); i++ {
+		result[i] = v.Index(i).Interface()
+	}
+	return result
 }
 
 // apiRequest makes an authenticated API request
@@ -316,7 +683,17 @@ func (c *GhionClient) apiRequestWithRetry(method, path string, data map[string]i
 			"error": err.Error(),
 		})
 	}
-	fullPath := parsedURL.Path + parsedURL.RawQuery
+	// For GET requests, use only pathname for signature (exclude query string)
+	// For other methods, include query string in signature
+	var signaturePath string
+	if method == "GET" {
+		signaturePath = parsedURL.Path
+	} else {
+		signaturePath = parsedURL.Path
+		if parsedURL.RawQuery != "" {
+			signaturePath += "?" + parsedURL.RawQuery
+		}
+	}
 
 	// Create request
 	req, err := http.NewRequest(method, fullURL, bodyReader)
@@ -331,7 +708,7 @@ func (c *GhionClient) apiRequestWithRetry(method, path string, data map[string]i
 
 	if !skipAuth {
 		timestamp := utils.GetCurrentTimestamp()
-		signature := utils.GenerateSignature(timestamp, method, fullPath, bodyString, c.apiSecret)
+		signature := utils.GenerateSignature(timestamp, method, signaturePath, bodyString, c.apiSecret)
 
 		req.Header.Set("X-Ghion-Key", c.apiKey)
 		req.Header.Set("X-Ghion-Timestamp", strconv.FormatInt(timestamp, 10))
