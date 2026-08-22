@@ -108,20 +108,6 @@ func TestBillPaymentValidation(t *testing.T) {
 		t.Fatalf("Failed to create client: %v", err)
 	}
 
-	t.Run("CreateBill with empty bill ID", func(t *testing.T) {
-		_, err := client.CreateBill(&types.CreateBillRequest{
-			BillID:  "",
-			Amount:  100,
-			DueDate: "2026-09-01",
-		})
-		if err == nil {
-			t.Error("Expected error for empty bill ID")
-		}
-		if _, ok := err.(*errors.ValidationError); !ok {
-			t.Errorf("Expected ValidationError but got %T", err)
-		}
-	})
-
 	t.Run("CreateBill with zero amount", func(t *testing.T) {
 		_, err := client.CreateBill(&types.CreateBillRequest{
 			BillID:  "INV-001",

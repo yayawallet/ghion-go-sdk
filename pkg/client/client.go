@@ -579,6 +579,63 @@ func (c *GhionClient) RecordManualPayment(billID string, request *types.RecordMa
 	return &response, nil
 }
 
+// SendPaymentReminder sends a payment reminder to the customer via email and SMS
+// billID: Bill ID
+// request: Optional custom message
+// Returns: Reminder confirmation with count and timestamp
+func (c *GhionClient) SendPaymentReminder(billID string, request *types.SendPaymentReminderRequest) (*types.SendPaymentReminderResponse, error) {
+	if err := utils.ValidateBillID(billID); err != nil {
+		return nil, err
+	}
+	if request != nil {
+		if err := utils.ValidateSendPaymentReminderRequest(request.Message); err != nil {
+			return nil, err
+		}
+	}
+
+	body := make(map[string]interface{})
+	if request != nil && request.Message != "" {
+		body["message"] = request.Message
+	}
+
+	var response types.SendPaymentReminderResponse
+	path := fmt.Sprintf("/dashboard/bills/%s/send-reminder", billID)
+	if err := c.apiRequest("POST", path, body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GenerateBillID generates a suggested auto-generated bill ID
+// Returns: Suggested bill ID
+func (c *GhionClient) GenerateBillID() (*types.GenerateBillIDResponse, error) {
+	var response types.GenerateBillIDResponse
+	if err := c.apiRequest("GET", "/dashboard/bills/generate-id", nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// InitiateCheckout initiates checkout for a bill
+// Ensures a PaymentLink exists for the bill (creates if needed)
+// billID: Bill ID
+// Returns: Checkout information with payment link
+func (c *GhionClient) InitiateCheckout(billID string) (*types.InitiateCheckoutResponse, error) {
+	if err := utils.ValidateBillID(billID); err != nil {
+		return nil, err
+	}
+
+	var response types.InitiateCheckoutResponse
+	path := fmt.Sprintf("/dashboard/bills/%s/initiate-checkout", billID)
+	if err := c.apiRequest("POST", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
 // GetBillerSettings retrieves biller configuration including biller_code, clusters, bill codes, and webhook settings
 // Returns: Biller settings
 func (c *GhionClient) GetBillerSettings() (*types.BillerSettingsResponse, error) {

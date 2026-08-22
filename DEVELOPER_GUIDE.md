@@ -170,7 +170,7 @@ Create a single bill with customer information:
 
 ```go
 bill, err := client.CreateBill(&types.CreateBillRequest{
-    BillID:        "INV-12345",
+    BillID:        "INV-12345", // Optional: If omitted, one will be auto-generated
     Amount:        500.00,
     Currency:      "ETB",
     DueDate:       "2026-09-01",
@@ -187,18 +187,37 @@ if err != nil {
 ```
 
 **Required Parameters:**
-- `billID`: Unique bill identifier
 - `amount`: Bill amount
 - `dueDate`: Due date in Y-m-d format
 - `customerName`: Customer name
 
 **Optional Parameters:**
+- `billID`: Unique bill identifier (if omitted, one will be auto-generated)
 - `currency`: Currency code (default: ETB)
 - `customerPhone`: Customer phone number
 - `customerEmail`: Customer email
 - `description`: Bill description
 - `billCode`: Bill code for categorization
 - `cluster`: Geographic cluster
+
+**Important Notes:**
+- `billID` is now optional. If omitted, the API will auto-generate one
+- You can use `GenerateBillID()` to get a suggested auto-generated bill ID before creating a bill
+
+#### Generate Bill ID
+
+Generate a suggested auto-generated bill ID before creating a bill:
+
+```go
+generatedID, err := client.GenerateBillID()
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Generated Bill ID: %s\n", generatedID.BillID)
+```
+
+**Use Case:** Use this to preview what the auto-generated bill ID would be, or to generate IDs in bulk before creating bills.
 
 #### Create Bulk Bills
 
@@ -339,6 +358,29 @@ fmt.Printf("Bill Status: %s\n", payment.BillStatus)
 fmt.Printf("Balance Due: %.2f\n", payment.BalanceDue)
 ```
 
+#### Send Payment Reminder
+
+Send payment reminders to customers via email and SMS to encourage timely payments:
+
+```go
+reminder, err := client.SendPaymentReminder(bill.ID, &types.SendPaymentReminderRequest{
+    Message: "Please pay your bill before the due date.",
+})
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Reminder Sent: %v\n", reminder.Sent)
+fmt.Printf("Reminder Count: %d\n", reminder.ReminderCount)
+fmt.Printf("Last Reminder Sent At: %s\n", reminder.LastReminderSentAt)
+```
+
+**Important Notes:**
+- The message parameter is optional - if not provided, a default reminder message will be sent
+- Requires the `bill_payment.reminders.send` permission
+- The response includes the total reminder count and timestamp of the last reminder sent
+- Reminders are sent via both email and SMS to the customer
+
 #### Get Bill Payment Link
 
 Generate a shareable payment link for bills:
@@ -381,6 +423,27 @@ if err != nil {
 fmt.Printf("Payment Status: %s\n", publicBill.PaymentStatus)
 fmt.Printf("Amount Due: %.2f\n", publicBill.AmountDue)
 ```
+
+#### Initiate Checkout
+
+Initiate checkout for a bill to ensure a payment link exists. This creates a payment link if one doesn't already exist:
+
+```go
+checkout, err := client.InitiateCheckout(bill.ID)
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Payment Link Slug: %s\n", checkout.PaymentLinkSlug)
+fmt.Printf("Balance Due: %.2f %s\n", checkout.BalanceDue, checkout.Currency)
+fmt.Printf("Checkout URL: %s\n", checkout.CheckoutURL)
+```
+
+**Important Notes:**
+- This endpoint ensures a payment link exists for the bill (creates if needed)
+- Returns the checkout URL directly, which can be shared with customers
+- Useful when you need to programmatically generate payment links for bills
+- The `payment_link_slug` can be used to construct custom URLs
 
 ### 5. Webhooks Integration
 Webhooks are **mandatory** for robust payment verification. Users might close the browser while a payment is processing, so your server must rely on webhooks to fulfill orders.

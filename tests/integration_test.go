@@ -432,6 +432,38 @@ func TestIntegration_RecordManualPayment(t *testing.T) {
 	t.Logf("Balance Due: %.2f", payment.BalanceDue)
 }
 
+func TestIntegration_SendPaymentReminder(t *testing.T) {
+	client := getTestClient(t)
+
+	// First create a bill
+	billID := fmt.Sprintf("INV-REMINDER-%d", time.Now().Unix())
+	bill, err := client.CreateBill(&types.CreateBillRequest{
+		BillID:       billID,
+		Amount:       500,
+		Currency:     "ETB",
+		DueDate:      "2026-09-01",
+		CustomerName: "Test Customer",
+		CustomerPhone: "+251911234567",
+		CustomerEmail: "test@example.com",
+		Description:  "Integration test bill for payment reminder",
+	})
+	if err != nil {
+		t.Fatalf("Failed to create bill: %v", err)
+	}
+
+	// Send payment reminder with custom message
+	reminder, err := client.SendPaymentReminder(bill.ID, &types.SendPaymentReminderRequest{
+		Message: "Please pay your bill before the due date.",
+	})
+	if err != nil {
+		t.Fatalf("Failed to send payment reminder: %v", err)
+	}
+
+	t.Logf("Payment reminder sent: %v", reminder.Sent)
+	t.Logf("Reminder count: %d", reminder.ReminderCount)
+	t.Logf("Last reminder sent at: %s", reminder.LastReminderSentAt)
+}
+
 func TestIntegration_DeleteBill(t *testing.T) {
 	client := getTestClient(t)
 
