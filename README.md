@@ -13,6 +13,9 @@ A type-safe Go SDK for the Ghion Finances payment gateway. Built with security, 
 - **Multi-Channel**: Support for USSD, QR, and OTP payment methods
 - **Retry Logic**: Automatic retry for transient failures and rate limits
 - **Bill Payment API**: Complete support for creating and managing bills
+- **Auto-Generated Bill IDs**: Support for optional BillID with auto-generation
+- **Payment Reminders**: Send payment reminders to customers via email and SMS
+- **Checkout Initiation**: Programmatically generate payment links for bills
 
 ## Repository Structure
 
@@ -102,9 +105,9 @@ go tool cover -html=coverage.out
 ```
 
 **Current Coverage:**
-- `pkg/client`: 77.5% (validation and configuration logic)
+- `pkg/client`: 72.4% (validation and configuration logic)
 - `pkg/errors`: 95.8% (error type constructors)
-- `pkg/utils`: 90.9% (crypto and validation functions)
+- `pkg/utils`: 87.6% (crypto and validation functions)
 - `pkg/webhook`: 97.5% (signature verification and parsing)
 
 ### Unit Tests (No Credentials Required)

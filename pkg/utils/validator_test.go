@@ -519,14 +519,6 @@ func TestValidateCreateBillRequest(t *testing.T) {
 			expectError:  false,
 		},
 		{
-			name:         "empty bill ID",
-			billID:       "",
-			amount:       500,
-			dueDate:      "2026-09-01",
-			customerEmail: "",
-			expectError:  true,
-		},
-		{
 			name:         "zero amount",
 			billID:       "INV-12345",
 			amount:       0,

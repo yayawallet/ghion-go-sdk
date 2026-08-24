@@ -4,4 +4,4 @@ go 1.25.6
 
 require github.com/joho/godotenv v1.5.1 // indirect
 
-// Version: 1.1.0
+// Version: 1.2.0

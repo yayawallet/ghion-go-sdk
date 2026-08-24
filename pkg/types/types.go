@@ -257,7 +257,7 @@ type Penalty struct {
 
 // CreateBillRequest represents a bill creation request
 type CreateBillRequest struct {
-	BillID        string                 `json:"bill_id"`                   // Required: Your unique bill identifier (max 100 chars)
+	BillID        string                 `json:"bill_id,omitempty"`        // Optional: Your unique bill identifier (max 100 chars). If omitted, one will be auto-generated
 	Amount        float64                `json:"amount"`                    // Required: Bill amount
 	Currency      string                 `json:"currency,omitempty"`        // Optional: Currency code (default: ETB)
 	DueDate       string                 `json:"due_date"`                  // Required: Due date in Y-m-d format
@@ -585,4 +585,29 @@ type RecordManualPaymentResponse struct {
 	Amount      float64 `json:"amount"`
 	BillStatus  string  `json:"bill_status"`
 	BalanceDue  float64 `json:"balance_due"`
+}
+
+// SendPaymentReminderRequest represents a send payment reminder request
+type SendPaymentReminderRequest struct {
+	Message string `json:"message,omitempty"`
+}
+
+// SendPaymentReminderResponse represents a send payment reminder response
+type SendPaymentReminderResponse struct {
+	Sent                bool   `json:"sent"`
+	ReminderCount       int    `json:"reminder_count"`
+	LastReminderSentAt  string `json:"last_reminder_sent_at"`
+}
+
+// GenerateBillIDResponse represents a generate bill ID response
+type GenerateBillIDResponse struct {
+	BillID string `json:"bill_id"`
+}
+
+// InitiateCheckoutResponse represents an initiate checkout response
+type InitiateCheckoutResponse struct {
+	PaymentLinkSlug string  `json:"payment_link_slug"`
+	BalanceDue      float64 `json:"balance_due"`
+	Currency        string  `json:"currency"`
+	CheckoutURL     string  `json:"checkout_url"`
 }

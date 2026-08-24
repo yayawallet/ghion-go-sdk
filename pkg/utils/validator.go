@@ -153,8 +153,10 @@ func ValidateBillID(billID string) error {
 
 // ValidateCreateBillRequest validates bill creation request
 func ValidateCreateBillRequest(billID string, amount float64, dueDate, customerEmail string) error {
-	if err := requireNonEmptyString(billID, "Bill ID"); err != nil {
-		return err
+	if billID != "" {
+		if err := requireNonEmptyString(billID, "Bill ID"); err != nil {
+			return err
+		}
 	}
 
 	if amount <= 0 {
@@ -308,4 +310,14 @@ func isValidDate(dateStr string) bool {
 func isValidEmail(email string) bool {
 	emailPattern := regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 	return emailPattern.MatchString(email)
+}
+
+// ValidateSendPaymentReminderRequest validates send payment reminder request
+func ValidateSendPaymentReminderRequest(message string) error {
+	if message != "" {
+		if err := requireStringIfPresent(message, "Message"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
