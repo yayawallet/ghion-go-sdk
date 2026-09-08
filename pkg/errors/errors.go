@@ -118,7 +118,7 @@ func NewPaymentError(message, paymentID string, details map[string]interface{}) 
 	details["payment_id"] = paymentID
 	return &PaymentError{
 		GhionError: NewGhionError(message, "PAYMENT_ERROR", details),
-		PaymentID: paymentID,
+		PaymentID:  paymentID,
 	}
 }
 

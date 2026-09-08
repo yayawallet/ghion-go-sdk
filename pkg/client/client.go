@@ -286,21 +286,21 @@ func (c *GhionClient) CreateBill(request *types.CreateBillRequest) (*types.BillR
 	}
 
 	body := map[string]interface{}{
-		"bill_id":    request.BillID,
-		"amount":     request.Amount,
-		"currency":   request.Currency,
-		"due_date":   request.DueDate,
-		"start_date": request.StartDate,
-		"expires_date": request.ExpiresDate,
-		"customer_name": request.CustomerName,
+		"bill_id":        request.BillID,
+		"amount":         request.Amount,
+		"currency":       request.Currency,
+		"due_date":       request.DueDate,
+		"start_date":     request.StartDate,
+		"expires_date":   request.ExpiresDate,
+		"customer_name":  request.CustomerName,
 		"customer_phone": request.CustomerPhone,
 		"customer_email": request.CustomerEmail,
-		"customer_id": request.CustomerID,
-		"description": request.Description,
-		"bill_code": request.BillCode,
-		"cluster": request.Cluster,
-		"penalty": request.Penalty,
-		"metadata": request.Metadata,
+		"customer_id":    request.CustomerID,
+		"description":    request.Description,
+		"bill_code":      request.BillCode,
+		"cluster":        request.Cluster,
+		"penalty":        request.Penalty,
+		"metadata":       request.Metadata,
 	}
 
 	var response types.BillResponse
@@ -454,7 +454,7 @@ func (c *GhionClient) PublicBillLookup(request *types.PublicBillLookupRequest) (
 
 	body := map[string]interface{}{
 		"biller_code": request.BillerCode,
-		"bill_id": request.BillID,
+		"bill_id":     request.BillID,
 	}
 
 	var response types.PublicBillLookupResponse
@@ -492,20 +492,20 @@ func (c *GhionClient) UpdateBill(billID string, request *types.UpdateBillRequest
 	}
 
 	body := map[string]interface{}{
-		"amount": request.Amount,
-		"currency": request.Currency,
-		"due_date": request.DueDate,
-		"start_date": request.StartDate,
-		"expires_date": request.ExpiresDate,
-		"customer_name": request.CustomerName,
+		"amount":         request.Amount,
+		"currency":       request.Currency,
+		"due_date":       request.DueDate,
+		"start_date":     request.StartDate,
+		"expires_date":   request.ExpiresDate,
+		"customer_name":  request.CustomerName,
 		"customer_phone": request.CustomerPhone,
 		"customer_email": request.CustomerEmail,
-		"customer_id": request.CustomerID,
-		"description": request.Description,
-		"bill_code": request.BillCode,
-		"cluster": request.Cluster,
-		"penalty": request.Penalty,
-		"metadata": request.Metadata,
+		"customer_id":    request.CustomerID,
+		"description":    request.Description,
+		"bill_code":      request.BillCode,
+		"cluster":        request.Cluster,
+		"penalty":        request.Penalty,
+		"metadata":       request.Metadata,
 	}
 
 	// Remove nil values from body
@@ -555,11 +555,11 @@ func (c *GhionClient) RecordManualPayment(billID string, request *types.RecordMa
 	}
 
 	body := map[string]interface{}{
-		"amount": request.Amount,
-		"source": request.Source,
+		"amount":         request.Amount,
+		"source":         request.Source,
 		"payment_method": request.PaymentMethod,
-		"reference": request.Reference,
-		"note": request.Note,
+		"reference":      request.Reference,
+		"note":           request.Note,
 	}
 
 	// Set defaults
@@ -656,23 +656,23 @@ func (c *GhionClient) UpdateBillerSettings(request *types.BillerSettingsRequest)
 	}
 
 	body := map[string]interface{}{
-		"biller_name": request.BillerName,
-		"biller_category": request.BillerCategory,
-		"biller_description": request.BillerDescription,
-		"icon_url": request.IconURL,
-		"service_charge_rate": request.ServiceChargeRate,
-		"service_charge_type": request.ServiceChargeType,
-		"min_service_charge": request.MinServiceCharge,
-		"max_service_charge": request.MaxServiceCharge,
-		"service_charge_ranges": request.ServiceChargeRanges,
-		"clusters": request.Clusters,
-		"bill_codes": request.BillCodes,
-		"webhook_url": request.WebhookURL,
-		"webhook_secret": request.WebhookSecret,
-		"settlement_bank_code": request.SettlementBankCode,
+		"biller_name":               request.BillerName,
+		"biller_category":           request.BillerCategory,
+		"biller_description":        request.BillerDescription,
+		"icon_url":                  request.IconURL,
+		"service_charge_rate":       request.ServiceChargeRate,
+		"service_charge_type":       request.ServiceChargeType,
+		"min_service_charge":        request.MinServiceCharge,
+		"max_service_charge":        request.MaxServiceCharge,
+		"service_charge_ranges":     request.ServiceChargeRanges,
+		"clusters":                  request.Clusters,
+		"bill_codes":                request.BillCodes,
+		"webhook_url":               request.WebhookURL,
+		"webhook_secret":            request.WebhookSecret,
+		"settlement_bank_code":      request.SettlementBankCode,
 		"settlement_account_number": request.SettlementAccountNumber,
-		"settlement_account_name": request.SettlementAccountName,
-		"settlement_accounts": request.SettlementAccounts,
+		"settlement_account_name":   request.SettlementAccountName,
+		"settlement_accounts":       request.SettlementAccounts,
 	}
 
 	var response types.BillerSettingsResponse
@@ -874,17 +874,17 @@ func (c *GhionClient) apiRequestWithRetry(method, path string, data map[string]i
 
 // isSafeEndpoint checks if endpoint is safe for retry (idempotent GET operations)
 func (c *GhionClient) isSafeEndpoint(path string) bool {
-	return strings.Contains(path, "/checkout/") && 
-		!strings.Contains(path, "/pay/") && 
+	return strings.Contains(path, "/checkout/") &&
+		!strings.Contains(path, "/pay/") &&
 		!strings.Contains(path, "/otp-validate")
 }
 
 // isRetryableError checks if an error is retryable
 func (c *GhionClient) isRetryableError(err error) bool {
-	return err != nil && 
-		(strings.Contains(err.Error(), "timeout") || 
-		 strings.Contains(err.Error(), "connection refused") ||
-		 strings.Contains(err.Error(), "EOF"))
+	return err != nil &&
+		(strings.Contains(err.Error(), "timeout") ||
+			strings.Contains(err.Error(), "connection refused") ||
+			strings.Contains(err.Error(), "EOF"))
 }
 
 // redactSensitiveData redacts sensitive data from error responses
@@ -894,7 +894,7 @@ func (c *GhionClient) redactSensitiveData(data map[string]interface{}, depth int
 	}
 
 	sensitiveKeys := []string{
-		"api_key", "api_secret", "passphrase", "signature", 
+		"api_key", "api_secret", "passphrase", "signature",
 		"password", "otp_code", "token", "phone_number", "account_number",
 	}
 
@@ -929,6 +929,165 @@ func (c *GhionClient) redactSensitiveData(data map[string]interface{}, depth int
 	}
 
 	return redacted
+}
+
+// Hold Payment (Escrow) Methods
+
+// ListEscrows lists all held payments (escrows) for your account
+// request: Optional filter by status
+// Returns: List of escrows
+func (c *GhionClient) ListEscrows(request *types.ListEscrowsRequest) (*types.ListEscrowsResponse, error) {
+	if request != nil {
+		if err := utils.ValidateListEscrowsRequest(string(request.Status)); err != nil {
+			return nil, err
+		}
+	}
+
+	queryParams := ""
+	if request != nil && request.Status != "" {
+		queryParams = fmt.Sprintf("?status=%s", request.Status)
+	}
+
+	var response types.ListEscrowsResponse
+	path := fmt.Sprintf("/dashboard/escrows%s", queryParams)
+	if err := c.apiRequest("GET", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetEscrow retrieves a single escrow/holding by its ID
+// id: The escrow ID
+// Returns: Escrow details
+func (c *GhionClient) GetEscrow(id string) (*types.Escrow, error) {
+	if err := utils.ValidateEscrowID(id); err != nil {
+		return nil, err
+	}
+
+	var response types.Escrow
+	path := fmt.Sprintf("/dashboard/escrows/%s", id)
+	if err := c.apiRequest("GET", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// PullEscrowFunds pulls funds from a funded escrow to your balance
+// id: The escrow ID
+// Returns: Pull response with updated status
+func (c *GhionClient) PullEscrowFunds(id string) (*types.PullEscrowFundsResponse, error) {
+	if err := utils.ValidateEscrowID(id); err != nil {
+		return nil, err
+	}
+
+	var response types.PullEscrowFundsResponse
+	path := fmt.Sprintf("/dashboard/escrows/%s/pull", id)
+	if err := c.apiRequest("POST", path, nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// Pay Merchant (Direct Pay) Methods
+
+// GetDirectPaySettings retrieves current Pay Merchant settings
+// Returns: Direct Pay settings
+func (c *GhionClient) GetDirectPaySettings() (*types.GetDirectPaySettingsResponse, error) {
+	var response types.GetDirectPaySettingsResponse
+	if err := c.apiRequest("GET", "/dashboard/direct-pay/settings", nil, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// UpdateDirectPaySettings updates Pay Merchant settings
+// request: Settings to update
+// Returns: Updated settings
+func (c *GhionClient) UpdateDirectPaySettings(request *types.UpdateDirectPaySettingsRequest) (*types.GetDirectPaySettingsResponse, error) {
+	if err := utils.ValidateUpdateDirectPaySettingsRequest(request); err != nil {
+		return nil, err
+	}
+
+	body := make(map[string]interface{})
+	if request.CustomerIDRequired != nil {
+		body["customer_id_required"] = *request.CustomerIDRequired
+	}
+	if request.ReferenceRequired != nil {
+		body["reference_required"] = *request.ReferenceRequired
+	}
+	if request.ValidationAdapter != nil {
+		body["validation_adapter"] = *request.ValidationAdapter
+	}
+	if request.ValidationStrict != nil {
+		body["validation_strict"] = *request.ValidationStrict
+	}
+	if request.ValidationURL != nil {
+		body["validation_url"] = *request.ValidationURL
+	}
+	if request.ValidationMethod != nil {
+		body["validation_method"] = *request.ValidationMethod
+	}
+	if request.ValidationAPIKey != nil {
+		body["validation_api_key"] = *request.ValidationAPIKey
+	}
+	if request.ValidationAuthHeader != nil {
+		body["validation_auth_header"] = *request.ValidationAuthHeader
+	}
+	if request.ValidationRequestTemplate != nil {
+		body["validation_request_template"] = *request.ValidationRequestTemplate
+	}
+	if request.ValidationCustomerNamePath != nil {
+		body["validation_customer_name_path"] = *request.ValidationCustomerNamePath
+	}
+	if request.ValidationReferenceValidPath != nil {
+		body["validation_reference_valid_path"] = *request.ValidationReferenceValidPath
+	}
+	if request.ValidationReferencePath != nil {
+		body["validation_reference_path"] = *request.ValidationReferencePath
+	}
+	if request.ValidationAmountPath != nil {
+		body["validation_amount_path"] = *request.ValidationAmountPath
+	}
+	if request.ValidationErrorPath != nil {
+		body["validation_error_path"] = *request.ValidationErrorPath
+	}
+	if request.ValidationTimeout != nil {
+		body["validation_timeout"] = *request.ValidationTimeout
+	}
+
+	var response types.GetDirectPaySettingsResponse
+	if err := c.apiRequest("PUT", "/dashboard/direct-pay/settings", body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// TestDirectPaySettings tests Pay Merchant validation configuration
+// request: Test customer ID and optional reference
+// Returns: Validation test result
+func (c *GhionClient) TestDirectPaySettings(request *types.TestDirectPaySettingsRequest) (*types.TestDirectPaySettingsResponse, error) {
+	if err := utils.ValidateTestDirectPaySettingsRequest(request); err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"customer_id": request.CustomerID,
+	}
+	if request.Reference != "" {
+		body["reference"] = request.Reference
+	}
+
+	var response types.TestDirectPaySettingsResponse
+	if err := c.apiRequest("POST", "/dashboard/direct-pay/settings/test", body, &response, "", false); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }
 
 // removeEmptyValues removes empty values from a map

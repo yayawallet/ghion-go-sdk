@@ -16,6 +16,8 @@ A type-safe Go SDK for the Ghion Finances payment gateway. Built with security, 
 - **Auto-Generated Bill IDs**: Support for optional BillID with auto-generation
 - **Payment Reminders**: Send payment reminders to customers via email and SMS
 - **Checkout Initiation**: Programmatically generate payment links for bills
+- **Hold Payment (Escrow)**: Manage held payments and pull funds when ready
+- **Pay Merchant (Direct Pay)**: Configure and test direct payment settings with customer validation
 
 ## Repository Structure
 

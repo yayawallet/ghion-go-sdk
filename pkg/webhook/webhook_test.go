@@ -14,12 +14,12 @@ func TestWebhookHandler(t *testing.T) {
 
 	t.Run("verify valid signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
-		
+
 		// Generate a valid signature
 		h := hmac.New(sha256.New, []byte("test-secret"))
 		h.Write(payload)
 		signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
-		
+
 		result := handler.VerifyWebhook(payload, signature)
 		if !result {
 			t.Error("Expected true for valid signature")
@@ -29,7 +29,7 @@ func TestWebhookHandler(t *testing.T) {
 	t.Run("verify invalid signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
 		signature := "invalid-signature"
-		
+
 		result := handler.VerifyWebhook(payload, signature)
 		if result {
 			t.Error("Expected false for invalid signature")
@@ -39,7 +39,7 @@ func TestWebhookHandler(t *testing.T) {
 	t.Run("verify empty signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
 		signature := ""
-		
+
 		result := handler.VerifyWebhook(payload, signature)
 		if result {
 			t.Error("Expected false for empty signature")
@@ -48,12 +48,12 @@ func TestWebhookHandler(t *testing.T) {
 
 	t.Run("parse valid webhook", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345","amount":100,"currency":"ETB","reference":"order_12345","status":"completed","timestamp":"2024-01-01T00:00:00Z"}}`)
-		
+
 		// Generate a valid signature
 		h := hmac.New(sha256.New, []byte("test-secret"))
 		h.Write(payload)
 		signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
-		
+
 		event, err := handler.ParseWebhook(payload, signature)
 		if err != nil {
 			t.Errorf("Expected no error but got: %v", err)
@@ -69,7 +69,7 @@ func TestWebhookHandler(t *testing.T) {
 	t.Run("parse webhook with invalid signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
 		signature := "invalid-signature"
-		
+
 		_, err := handler.ParseWebhook(payload, signature)
 		if err == nil {
 			t.Error("Expected error for invalid signature")
@@ -79,7 +79,7 @@ func TestWebhookHandler(t *testing.T) {
 	t.Run("parse webhook with empty signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
 		signature := ""
-		
+
 		_, err := handler.ParseWebhook(payload, signature)
 		if err == nil {
 			t.Error("Expected error for empty signature")
@@ -89,7 +89,7 @@ func TestWebhookHandler(t *testing.T) {
 	t.Run("parse webhook with invalid JSON", func(t *testing.T) {
 		payload := []byte(`invalid json`)
 		signature := "signature"
-		
+
 		_, err := handler.ParseWebhook(payload, signature)
 		if err == nil {
 			t.Error("Expected error for invalid JSON")
@@ -453,7 +453,7 @@ func TestParseWebhookUnsafe(t *testing.T) {
 
 	t.Run("parse valid webhook unsafe", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345","amount":100,"currency":"ETB","reference":"order_12345","status":"completed","timestamp":"2024-01-01T00:00:00Z"}}`)
-		
+
 		event, err := handler.ParseWebhookUnsafe(payload)
 		if err != nil {
 			t.Errorf("Expected no error but got: %v", err)
@@ -468,7 +468,7 @@ func TestParseWebhookUnsafe(t *testing.T) {
 
 	t.Run("parse webhook with invalid JSON unsafe", func(t *testing.T) {
 		payload := []byte(`invalid json`)
-		
+
 		_, err := handler.ParseWebhookUnsafe(payload)
 		if err == nil {
 			t.Error("Expected error for invalid JSON")

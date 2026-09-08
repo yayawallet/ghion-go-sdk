@@ -68,6 +68,12 @@ type PaymentStatus = types.PaymentStatus
 // WebhookEventType represents the type of webhook event
 type WebhookEventType = types.WebhookEventType
 
+// BillStatus represents the status of a bill
+type BillStatus = types.BillStatus
+
+// EscrowStatus represents the status of an escrow
+type EscrowStatus = types.EscrowStatus
+
 // Request and Response types
 type (
 	// InitializePaymentRequest represents a payment initialization request
@@ -100,6 +106,24 @@ type (
 	QRInfo = types.QRInfo
 	// Merchant represents merchant information
 	Merchant = types.Merchant
+	// Escrow represents a hold payment (escrow)
+	Escrow = types.Escrow
+	// ListEscrowsRequest represents a request to list escrows
+	ListEscrowsRequest = types.ListEscrowsRequest
+	// ListEscrowsResponse represents a list of escrows
+	ListEscrowsResponse = types.ListEscrowsResponse
+	// PullEscrowFundsResponse represents the response when pulling escrow funds
+	PullEscrowFundsResponse = types.PullEscrowFundsResponse
+	// DirectPaySettings represents the Direct Pay settings
+	DirectPaySettings = types.DirectPaySettings
+	// GetDirectPaySettingsResponse represents the response when getting Direct Pay settings
+	GetDirectPaySettingsResponse = types.GetDirectPaySettingsResponse
+	// UpdateDirectPaySettingsRequest represents a request to update Direct Pay settings
+	UpdateDirectPaySettingsRequest = types.UpdateDirectPaySettingsRequest
+	// TestDirectPaySettingsRequest represents a request to test Direct Pay settings
+	TestDirectPaySettingsRequest = types.TestDirectPaySettingsRequest
+	// TestDirectPaySettingsResponse represents the response when testing Direct Pay settings
+	TestDirectPaySettingsResponse = types.TestDirectPaySettingsResponse
 )
 
 const (
@@ -115,6 +139,30 @@ const (
 	PaymentStatusCancelled = types.PaymentStatusCancelled
 	// PaymentStatusExpired represents an expired payment
 	PaymentStatusExpired = types.PaymentStatusExpired
+)
+
+const (
+	// BillStatusPending represents a pending bill
+	BillStatusPending = types.BillStatusPending
+	// BillStatusPaid represents a paid bill
+	BillStatusPaid = types.BillStatusPaid
+	// BillStatusOverdue represents an overdue bill
+	BillStatusOverdue = types.BillStatusOverdue
+	// BillStatusCancelled represents a cancelled bill
+	BillStatusCancelled = types.BillStatusCancelled
+)
+
+const (
+	// EscrowStatusFunded represents a funded escrow
+	EscrowStatusFunded = types.EscrowStatusFunded
+	// EscrowStatusWithdrawing represents a withdrawing escrow
+	EscrowStatusWithdrawing = types.EscrowStatusWithdrawing
+	// EscrowStatusWithdrawn represents a withdrawn escrow
+	EscrowStatusWithdrawn = types.EscrowStatusWithdrawn
+	// EscrowStatusReleased represents a released escrow
+	EscrowStatusReleased = types.EscrowStatusReleased
+	// EscrowStatusCancelled represents a cancelled escrow
+	EscrowStatusCancelled = types.EscrowStatusCancelled
 )
 
 // Shorter aliases for payment status (status.something format)

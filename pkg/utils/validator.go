@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/yayawallet/ghion-go-sdk/pkg/errors"
+	"github.com/yayawallet/ghion-go-sdk/pkg/types"
 )
 
 // ValidateAPIKey validates API key format
@@ -316,6 +317,63 @@ func isValidEmail(email string) bool {
 func ValidateSendPaymentReminderRequest(message string) error {
 	if message != "" {
 		if err := requireStringIfPresent(message, "Message"); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ValidateEscrowID validates escrow ID
+func ValidateEscrowID(id string) error {
+	return requireNonEmptyString(id, "Escrow ID")
+}
+
+// ValidateListEscrowsRequest validates list escrows request
+func ValidateListEscrowsRequest(status string) error {
+	if status != "" {
+		validStatuses := map[string]bool{
+			"funded":      true,
+			"withdrawing": true,
+			"withdrawn":   true,
+			"released":    true,
+			"cancelled":   true,
+		}
+		if !validStatuses[status] {
+			return errors.NewValidationError("Invalid escrow status. Must be one of: funded, withdrawing, withdrawn, released, cancelled", "status", status)
+		}
+	}
+	return nil
+}
+
+// ValidateUpdateDirectPaySettingsRequest validates update direct pay settings request
+func ValidateUpdateDirectPaySettingsRequest(request *types.UpdateDirectPaySettingsRequest) error {
+	if request.ValidationTimeout != nil {
+		if *request.ValidationTimeout < 1 || *request.ValidationTimeout > 60 {
+			return errors.NewValidationError("Validation timeout must be between 1 and 60 seconds", "validation_timeout", *request.ValidationTimeout)
+		}
+	}
+
+	if request.ValidationAdapter != nil && *request.ValidationAdapter == "http" {
+		if request.ValidationURL == nil || *request.ValidationURL == "" {
+			return errors.NewValidationError("Validation URL is required when validation_adapter is 'http'", "validation_url", request.ValidationURL)
+		}
+		if request.ValidationURL != nil && *request.ValidationURL != "" {
+			if err := requireStringIfPresent(*request.ValidationURL, "Validation URL"); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// ValidateTestDirectPaySettingsRequest validates test direct pay settings request
+func ValidateTestDirectPaySettingsRequest(request *types.TestDirectPaySettingsRequest) error {
+	if err := requireNonEmptyString(request.CustomerID, "Customer ID"); err != nil {
+		return err
+	}
+	if request.Reference != "" {
+		if err := requireStringIfPresent(request.Reference, "Reference"); err != nil {
 			return err
 		}
 	}

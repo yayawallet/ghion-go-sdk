@@ -17,10 +17,10 @@ import (
 // Returns: Base64-encoded signature
 func GenerateSignature(timestamp int64, method, path, body, secret string) string {
 	message := strconv.FormatInt(timestamp, 10) + method + path + body
-	
+
 	h := hmac.New(sha256.New, []byte(secret))
 	h.Write([]byte(message))
-	
+
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
@@ -31,7 +31,7 @@ func GenerateSignature(timestamp int64, method, path, body, secret string) strin
 // Returns: True if signature is valid
 func VerifyWebhookSignature(rawBody []byte, signature, secret string) bool {
 	expected := generateWebhookSignature(rawBody, secret)
-	
+
 	// Use constant-time comparison to prevent timing attacks
 	return hmac.Equal([]byte(expected), []byte(signature))
 }
