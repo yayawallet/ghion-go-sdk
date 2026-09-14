@@ -10,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/yayawallet/ghion-go-sdk"
+	"github.com/yayawallet/ghion-go-sdk/pkg/errors"
 	"github.com/yayawallet/ghion-go-sdk/pkg/types"
 )
 
@@ -797,7 +798,7 @@ func TestIntegration_GetCheckout(t *testing.T) {
 	}
 
 	t.Logf("Checkout Status: %s", checkout.Status)
-	t.Logf("Is Expired: %v", checkout.IsExpired)
+	t.Logf("Checkout URL: %s", checkout.CheckoutURL)
 	t.Logf("Expires At: %s", checkout.ExpiresAt)
 
 	if checkout.Merchant != nil {
@@ -809,5 +810,105 @@ func TestIntegration_GetCheckout(t *testing.T) {
 		for _, channel := range checkout.AvailableChannels {
 			t.Logf("  - %s (%s)", channel.Name, channel.Code)
 		}
+	}
+}
+
+func TestIntegration_ListEscrows(t *testing.T) {
+	client := getTestClient(t)
+
+	escrows, err := client.ListEscrows(nil)
+	if err != nil {
+		// May fail if module not enabled (403 error)
+		if apiErr, ok := err.(*errors.APIError); ok && apiErr.StatusCode == 403 {
+			t.Skip("Hold Payment module not enabled for this account")
+			return
+		}
+		t.Fatalf("Failed to list escrows: %v", err)
+	}
+
+	t.Logf("Found %d escrows", len(escrows.Escrows))
+	for _, escrow := range escrows.Escrows {
+		t.Logf("Escrow ID: %s, Status: %s, Amount: %s %s",
+			escrow.ID, escrow.Status, escrow.Amount, escrow.Currency)
+	}
+}
+
+func TestIntegration_ListEscrowsWithStatus(t *testing.T) {
+	client := getTestClient(t)
+
+	escrows, err := client.ListEscrows(&types.ListEscrowsRequest{
+		Status: types.EscrowStatusFunded,
+	})
+	if err != nil {
+		// May fail if module not enabled (403 error)
+		if apiErr, ok := err.(*errors.APIError); ok && apiErr.StatusCode == 403 {
+			t.Skip("Hold Payment module not enabled for this account")
+			return
+		}
+		t.Fatalf("Failed to list escrows with status: %v", err)
+	}
+
+	t.Logf("Found %d funded escrows", len(escrows.Escrows))
+}
+
+func TestIntegration_GetDirectPaySettings(t *testing.T) {
+	client := getTestClient(t)
+
+	settings, err := client.GetDirectPaySettings()
+	if err != nil {
+		// May fail if module not enabled (403 error)
+		if apiErr, ok := err.(*errors.APIError); ok && apiErr.StatusCode == 403 {
+			t.Skip("Pay Merchant module not enabled for this account")
+			return
+		}
+		t.Fatalf("Failed to get direct pay settings: %v", err)
+	}
+
+	t.Logf("Configured: %v", settings.Configured)
+	t.Logf("Customer ID Required: %v", settings.Settings.CustomerIDRequired)
+	t.Logf("Reference Required: %v", settings.Settings.ReferenceRequired)
+	t.Logf("Validation Adapter: %s", settings.Settings.ValidationAdapter)
+}
+
+func TestIntegration_TestDirectPaySettings(t *testing.T) {
+	client := getTestClient(t)
+
+	// First check if validation is configured
+	settings, err := client.GetDirectPaySettings()
+	if err != nil {
+		// May fail if module not enabled (403 error)
+		if apiErr, ok := err.(*errors.APIError); ok && apiErr.StatusCode == 403 {
+			t.Skip("Pay Merchant module not enabled for this account")
+			return
+		}
+		t.Fatalf("Failed to get direct pay settings: %v", err)
+	}
+
+	if !settings.Configured || settings.Settings.ValidationAdapter != "http" {
+		t.Skip("Direct Pay validation not configured, skipping test")
+		return
+	}
+
+	// Test the validation configuration
+	testResult, err := client.TestDirectPaySettings(&types.TestDirectPaySettingsRequest{
+		CustomerID: "TEST-123",
+		Reference:  "INV-001",
+	})
+	if err != nil {
+		t.Fatalf("Failed to test direct pay settings: %v", err)
+	}
+
+	t.Logf("Validation Performed: %v", testResult.ValidationPerformed)
+	if testResult.CustomerName != nil {
+		t.Logf("Customer Name: %s", *testResult.CustomerName)
+	}
+	if testResult.ReferenceValid != nil {
+		t.Logf("Reference Valid: %v", *testResult.ReferenceValid)
+	}
+	if testResult.Amount != nil {
+		t.Logf("Amount: %.2f", *testResult.Amount)
+	}
+	if testResult.Error != nil {
+		t.Logf("Error: %s", *testResult.Error)
 	}
 }

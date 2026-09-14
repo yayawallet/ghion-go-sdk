@@ -595,7 +595,7 @@ func TestWebhookVerification(t *testing.T) {
 	t.Run("verify webhook with valid signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
 		signature := "valid-signature"
-		
+
 		// This will fail with invalid signature since we're not generating a real one
 		// but the test structure is correct
 		result := client.VerifyWebhook(payload, signature)
@@ -607,7 +607,7 @@ func TestWebhookVerification(t *testing.T) {
 	t.Run("verify webhook with empty signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
 		signature := ""
-		
+
 		result := client.VerifyWebhook(payload, signature)
 		if result {
 			t.Error("Expected false for empty signature")
@@ -617,7 +617,7 @@ func TestWebhookVerification(t *testing.T) {
 	t.Run("parse webhook with invalid signature", func(t *testing.T) {
 		payload := []byte(`{"event":"transaction.completed","data":{"payment_id":"12345"}}`)
 		signature := ""
-		
+
 		_, err := client.ParseWebhook(payload, signature)
 		if err == nil {
 			t.Error("Expected error for empty signature")
@@ -696,7 +696,7 @@ func TestInitializePaymentWithMetadata(t *testing.T) {
 		Reference: "order_12345",
 		Metadata:  map[string]interface{}{"order_id": "12345", "customer_id": "67890"},
 	}
-	
+
 	_, err = client.InitializePayment(request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -720,7 +720,7 @@ func TestSubmitPaymentWithAllFields(t *testing.T) {
 		PaymentMethod: "qr",
 		PhoneNumber:   "+251911234567",
 	}
-	
+
 	_, err = client.SubmitPayment("payment_12345", request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -839,7 +839,7 @@ func TestInitializePaymentWithAllOptionalFields(t *testing.T) {
 		CancelURL:   "https://example.com/cancel",
 		Metadata:    map[string]interface{}{"order_id": "12345"},
 	}
-	
+
 	_, err = client.InitializePayment(request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -865,7 +865,7 @@ func TestInitializePaymentWithDifferentCurrencies(t *testing.T) {
 			Currency:  currency,
 			Reference: "order_12345",
 		}
-		
+
 		_, err = client.InitializePayment(request)
 		// Will fail with network error, but validation should pass
 		if err != nil {
@@ -890,7 +890,7 @@ func TestSubmitPaymentWithDifferentChannels(t *testing.T) {
 		request := &types.SubmitPaymentRequest{
 			Channel: channel,
 		}
-		
+
 		_, err = client.SubmitPayment("payment_12345", request)
 		// Will fail with network error, but validation should pass
 		if err != nil {
@@ -946,7 +946,7 @@ func TestInitializePaymentWithLargeAmount(t *testing.T) {
 		Amount:    1000000,
 		Reference: "order_12345",
 	}
-	
+
 	_, err = client.InitializePayment(request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -970,7 +970,7 @@ func TestSubmitPaymentWithUSSDMethod(t *testing.T) {
 		PaymentMethod: "ussd",
 		PhoneNumber:   "+251911234567",
 	}
-	
+
 	_, err = client.SubmitPayment("payment_12345", request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -993,7 +993,7 @@ func TestInitializePaymentWithVeryLargeAmount(t *testing.T) {
 		Amount:    999999999,
 		Reference: "order_12345",
 	}
-	
+
 	_, err = client.InitializePayment(request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -1016,7 +1016,7 @@ func TestInitializePaymentWithDecimalAmount(t *testing.T) {
 		Amount:    100.50,
 		Reference: "order_12345",
 	}
-	
+
 	_, err = client.InitializePayment(request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -1039,7 +1039,7 @@ func TestSubmitPaymentWithEmptyPaymentMethod(t *testing.T) {
 		Channel:       "telebirr",
 		PaymentMethod: "",
 	}
-	
+
 	_, err = client.SubmitPayment("payment_12345", request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -1080,7 +1080,7 @@ func TestInitializePaymentWithVeryShortReference(t *testing.T) {
 		Amount:    100,
 		Reference: "a",
 	}
-	
+
 	_, err = client.InitializePayment(request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -1103,12 +1103,12 @@ func TestInitializePaymentWithVeryLongReference(t *testing.T) {
 	for range longRef {
 		longRef = "a" + longRef
 	}
-	
+
 	request := &types.InitializePaymentRequest{
 		Amount:    100,
 		Reference: longRef,
 	}
-	
+
 	_, err = client.InitializePayment(request)
 	// Will fail with network error, but validation should pass
 	if err != nil {
@@ -1376,7 +1376,7 @@ func TestUpdateBillerSettingsWithAllFields(t *testing.T) {
 	request := &types.BillerSettingsRequest{
 		ServiceChargeRate: 0.05,
 		Clusters:          []string{"ADDIS ABABA", "HAWASSA"},
-		BillCodes:          []types.BillCode{{Code: "UTIL", Name: "Utilities"}},
+		BillCodes:         []types.BillCode{{Code: "UTIL", Name: "Utilities"}},
 	}
 
 	_, err = client.UpdateBillerSettings(request)

@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-08
+
+### Added
+- Hold Payment (Escrow) support for managing held payments
+- `ListEscrows` method to list all held payments (escrows) for your account with optional status filter
+- `GetEscrow` method to retrieve a single escrow/holding by its ID
+- `PullEscrowFunds` method to pull funds from a funded escrow to your balance
+- Pay Merchant (Direct Pay) support for configuring and testing direct payment settings
+- `GetDirectPaySettings` method to retrieve current Pay Merchant settings
+- `UpdateDirectPaySettings` method to update Pay Merchant settings with customer validation configuration
+- `TestDirectPaySettings` method to test Pay Merchant validation configuration
+- `EscrowStatus` enum (funded, withdrawing, withdrawn, released, cancelled)
+- `Escrow` struct for hold payment details
+- `DirectPaySettings` struct for Pay Merchant configuration
+- Comprehensive types: ListEscrowsRequest, ListEscrowsResponse, PullEscrowFundsResponse, GetDirectPaySettingsResponse, UpdateDirectPaySettingsRequest, TestDirectPaySettingsRequest, TestDirectPaySettingsResponse
+- Validators for all Hold Payment and Pay Merchant requests with status validation, timeout validation, and URL validation
+
+### Changed
+- Updated documentation with usage examples for Hold Payment and Pay Merchant features
+- Added integration tests for Hold Payment and Pay Merchant endpoints
+- Enhanced README with new feature descriptions
+
 ## [1.2.0] - 2026-08-22
 
 ### Added

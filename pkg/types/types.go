@@ -37,86 +37,86 @@ type GhionConfig struct {
 
 // InitializePaymentRequest represents a payment initialization request
 type InitializePaymentRequest struct {
-	Amount      float64              `json:"amount"`
-	Currency    string               `json:"currency,omitempty"`
-	Reference   string               `json:"reference"`
-	Description string               `json:"description,omitempty"`
-	WebhookURL  string               `json:"webhook_url,omitempty"`
-	ReturnURL   string               `json:"return_url,omitempty"`
-	CancelURL   string               `json:"cancel_url,omitempty"`
+	Amount      float64                `json:"amount"`
+	Currency    string                 `json:"currency,omitempty"`
+	Reference   string                 `json:"reference"`
+	Description string                 `json:"description,omitempty"`
+	WebhookURL  string                 `json:"webhook_url,omitempty"`
+	ReturnURL   string                 `json:"return_url,omitempty"`
+	CancelURL   string                 `json:"cancel_url,omitempty"`
 	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // InitializePaymentResponse represents a payment initialization response
 type InitializePaymentResponse struct {
-	ID               string           `json:"id"`
-	Amount           float64          `json:"amount"`
-	Currency         string           `json:"currency"`
-	Reference        string           `json:"reference"`
-	Description      string           `json:"description"`
-	Status           string           `json:"status"`
-	Channels         []PaymentChannel `json:"channels"`
+	ID                string           `json:"id"`
+	Amount            float64          `json:"amount"`
+	Currency          string           `json:"currency"`
+	Reference         string           `json:"reference"`
+	Description       string           `json:"description"`
+	Status            string           `json:"status"`
+	Channels          []PaymentChannel `json:"channels"`
 	AvailableChannels []PaymentChannel `json:"available_channels,omitempty"`
-	ExpiresAt        string           `json:"expires_at"`
-	CreatedAt        string           `json:"created_at"`
-	Providers        []Provider       `json:"providers,omitempty"`
-	CardEnabled      bool             `json:"card_enabled,omitempty"`
-	OtherEnabled     bool             `json:"other_enabled,omitempty"`
-	QR               *QRInfo          `json:"qr,omitempty"`
-	YayaUniqueRef    string           `json:"yaya_unique_reference,omitempty"`
-	CheckoutURL      string           `json:"checkout_url,omitempty"`
-	AllowAmountEdit  bool             `json:"allow_amount_edit,omitempty"`
-	CallbackURL      string           `json:"callback_url,omitempty"`
-	ReturnURL        string           `json:"return_url,omitempty"`
-	CancelURL        string           `json:"cancel_url,omitempty"`
+	ExpiresAt         string           `json:"expires_at"`
+	CreatedAt         string           `json:"created_at"`
+	Providers         []Provider       `json:"providers,omitempty"`
+	CardEnabled       bool             `json:"card_enabled,omitempty"`
+	OtherEnabled      bool             `json:"other_enabled,omitempty"`
+	QR                *QRInfo          `json:"qr,omitempty"`
+	YayaUniqueRef     string           `json:"yaya_unique_reference,omitempty"`
+	CheckoutURL       string           `json:"checkout_url,omitempty"`
+	AllowAmountEdit   bool             `json:"allow_amount_edit,omitempty"`
+	CallbackURL       string           `json:"callback_url,omitempty"`
+	ReturnURL         string           `json:"return_url,omitempty"`
+	CancelURL         string           `json:"cancel_url,omitempty"`
 }
 
 // PaymentChannel represents an available payment channel
 type PaymentChannel struct {
-	ID             string `json:"id,omitempty"`
-	Code           string `json:"code,omitempty"`
-	Name           string `json:"name"`
-	Icon           string `json:"icon,omitempty"`
-	RequiresPhone  bool   `json:"requires_phone,omitempty"`
-	RequiresAccount bool  `json:"requires_account,omitempty"`
-	Type           string `json:"type,omitempty"`
-	Logo           string `json:"logo,omitempty"`
-	SupportsOTP    bool   `json:"supports_otp,omitempty"`
+	ID              string `json:"id,omitempty"`
+	Code            string `json:"code,omitempty"`
+	Name            string `json:"name"`
+	Icon            string `json:"icon,omitempty"`
+	RequiresPhone   bool   `json:"requires_phone,omitempty"`
+	RequiresAccount bool   `json:"requires_account,omitempty"`
+	Type            string `json:"type,omitempty"`
+	Logo            string `json:"logo,omitempty"`
+	SupportsOTP     bool   `json:"supports_otp,omitempty"`
 }
 
 // SubmitPaymentRequest represents a payment submission request
 type SubmitPaymentRequest struct {
-	Channel        string `json:"channel"`
-	PhoneNumber    string `json:"phone_number,omitempty"`
-	AccountNumber  string `json:"account_number,omitempty"`
-	PaymentMethod  string `json:"payment_method,omitempty"` // 'ussd', 'otp', or 'qr'
+	Channel       string `json:"channel"`
+	PhoneNumber   string `json:"phone_number,omitempty"`
+	AccountNumber string `json:"account_number,omitempty"`
+	PaymentMethod string `json:"payment_method,omitempty"` // 'ussd', 'otp', or 'qr'
 }
 
 // SubmitPaymentResponse represents a payment submission response
 type SubmitPaymentResponse struct {
-	ID           string  `json:"id"`
-	Status       string  `json:"status"`
+	ID            string `json:"id"`
+	Status        string `json:"status"`
 	TransactionID string `json:"transaction_id,omitempty"`
-	Message      string  `json:"message"`
-	RedirectURL  string  `json:"redirect_url,omitempty"`
+	Message       string `json:"message"`
+	RedirectURL   string `json:"redirect_url,omitempty"`
 }
 
 // PaymentStatusResponse represents a payment status response
 type PaymentStatusResponse struct {
-	ID           string       `json:"id"`
-	Amount       float64      `json:"amount"`
-	Currency     string       `json:"currency"`
-	Reference    string       `json:"reference"`
-	Description  string       `json:"description"`
-	Status       PaymentStatus `json:"status"`
-	Channel      string       `json:"channel,omitempty"`
-	TransactionID string      `json:"transaction_id,omitempty"`
-	Customer     *Customer    `json:"customer,omitempty"`
-	CreatedAt    string       `json:"created_at"`
-	UpdatedAt    string       `json:"updated_at"`
-	CompletedAt  string       `json:"completed_at,omitempty"`
-	FailedAt     string       `json:"failed_at,omitempty"`
-	FailureReason string      `json:"failure_reason,omitempty"`
+	ID            string        `json:"id"`
+	Amount        float64       `json:"amount"`
+	Currency      string        `json:"currency"`
+	Reference     string        `json:"reference"`
+	Description   string        `json:"description"`
+	Status        PaymentStatus `json:"status"`
+	Channel       string        `json:"channel,omitempty"`
+	TransactionID string        `json:"transaction_id,omitempty"`
+	Customer      *Customer     `json:"customer,omitempty"`
+	CreatedAt     string        `json:"created_at"`
+	UpdatedAt     string        `json:"updated_at"`
+	CompletedAt   string        `json:"completed_at,omitempty"`
+	FailedAt      string        `json:"failed_at,omitempty"`
+	FailureReason string        `json:"failure_reason,omitempty"`
 }
 
 // Customer represents customer information
@@ -129,65 +129,65 @@ type Customer struct {
 
 // CheckoutResponse represents checkout information
 type CheckoutResponse struct {
-	ID               string           `json:"id"`
-	Reference        string           `json:"reference"`
-	Amount           float64          `json:"amount"`
-	Currency         string           `json:"currency"`
-	Status           string           `json:"status"`
-	Mode             string           `json:"mode,omitempty"`
-	Description      string           `json:"description"`
-	Channel          string           `json:"channel,omitempty"`
-	IsExpired        bool             `json:"is_expired"`
-	ExpiresAt        string           `json:"expires_at"`
-	Providers        []Provider       `json:"providers,omitempty"`
-	CardEnabled      bool             `json:"card_enabled,omitempty"`
-	OtherEnabled     bool             `json:"other_enabled,omitempty"`
+	ID                string           `json:"id"`
+	Reference         string           `json:"reference"`
+	Amount            float64          `json:"amount"`
+	Currency          string           `json:"currency"`
+	Status            string           `json:"status"`
+	Mode              string           `json:"mode,omitempty"`
+	Description       string           `json:"description"`
+	Channel           string           `json:"channel,omitempty"`
+	IsExpired         bool             `json:"is_expired"`
+	ExpiresAt         string           `json:"expires_at"`
+	Providers         []Provider       `json:"providers,omitempty"`
+	CardEnabled       bool             `json:"card_enabled,omitempty"`
+	OtherEnabled      bool             `json:"other_enabled,omitempty"`
 	AvailableChannels []PaymentChannel `json:"available_channels,omitempty"`
-	CreatedAt        string           `json:"created_at"`
-	CallbackURL      string           `json:"callback_url,omitempty"`
-	ReturnURL        string           `json:"return_url,omitempty"`
-	CancelURL        string           `json:"cancel_url,omitempty"`
-	YayaUniqueRef    string           `json:"yaya_unique_reference,omitempty"`
-	QR               *QRInfo          `json:"qr,omitempty"`
-	Merchant         *Merchant        `json:"merchant,omitempty"`
-	CollectPhone     bool             `json:"collect_phone,omitempty"`
-	CollectEmail     bool             `json:"collect_email,omitempty"`
-	AllowAmountEdit  bool             `json:"allow_amount_edit,omitempty"`
-	PayerPhone       string           `json:"payer_phone,omitempty"`
-	FeeOnMerchant    bool             `json:"fee_on_merchant,omitempty"`
-	GatewayFee       float64          `json:"gateway_fee,omitempty"`
-	TotalAmount      float64          `json:"total_amount,omitempty"`
-	CheckoutURL      string           `json:"checkout_url,omitempty"`
+	CreatedAt         string           `json:"created_at"`
+	CallbackURL       string           `json:"callback_url,omitempty"`
+	ReturnURL         string           `json:"return_url,omitempty"`
+	CancelURL         string           `json:"cancel_url,omitempty"`
+	YayaUniqueRef     string           `json:"yaya_unique_reference,omitempty"`
+	QR                *QRInfo          `json:"qr,omitempty"`
+	Merchant          *Merchant        `json:"merchant,omitempty"`
+	CollectPhone      bool             `json:"collect_phone,omitempty"`
+	CollectEmail      bool             `json:"collect_email,omitempty"`
+	AllowAmountEdit   bool             `json:"allow_amount_edit,omitempty"`
+	PayerPhone        string           `json:"payer_phone,omitempty"`
+	FeeOnMerchant     bool             `json:"fee_on_merchant,omitempty"`
+	GatewayFee        float64          `json:"gateway_fee,omitempty"`
+	TotalAmount       float64          `json:"total_amount,omitempty"`
+	CheckoutURL       string           `json:"checkout_url,omitempty"`
 }
 
 // QRPaymentResponse represents a QR payment response
 type QRPaymentResponse struct {
-	Type         string `json:"type"`
+	Type          string `json:"type"`
 	TransactionID string `json:"transaction_id"`
-	Status       string `json:"status"`
-	QRImageURL   string `json:"qr_image_url"`
-	QRPayload    string `json:"qr_payload"`
+	Status        string `json:"status"`
+	QRImageURL    string `json:"qr_image_url"`
+	QRPayload     string `json:"qr_payload"`
 }
 
 // OTPSendResponse represents an OTP send response
 type OTPSendResponse struct {
-	Type         string `json:"type"`
+	Type          string `json:"type"`
 	TransactionID string `json:"transaction_id"`
-	Status       string `json:"status"`
-	Message      string `json:"message"`
+	Status        string `json:"status"`
+	Message       string `json:"message"`
 }
 
 // OTPValidateResponse represents an OTP validation response
 type OTPValidateResponse struct {
-	Status       string `json:"status"`
+	Status        string `json:"status"`
 	TransactionID string `json:"transaction_id"`
 }
 
 // Provider represents payment provider information
 type Provider struct {
-	Code   string   `json:"code"`
-	Name   string   `json:"name"`
-	Logo   string   `json:"logo,omitempty"`
+	Code    string   `json:"code"`
+	Name    string   `json:"name"`
+	Logo    string   `json:"logo,omitempty"`
 	Methods []string `json:"methods"`
 }
 
@@ -214,13 +214,13 @@ type WebhookEvent struct {
 
 // WebhookEventData represents the data within a webhook event
 type WebhookEventData struct {
-	PaymentID     string       `json:"payment_id"`
-	TransactionID string       `json:"transaction_id,omitempty"`
-	Amount        float64      `json:"amount"`
-	Currency      string       `json:"currency"`
-	Reference     string       `json:"reference"`
+	PaymentID     string        `json:"payment_id"`
+	TransactionID string        `json:"transaction_id,omitempty"`
+	Amount        float64       `json:"amount"`
+	Currency      string        `json:"currency"`
+	Reference     string        `json:"reference"`
 	Status        PaymentStatus `json:"status"`
-	Timestamp     string       `json:"timestamp"`
+	Timestamp     string        `json:"timestamp"`
 }
 
 // APIErrorResponse represents an API error response
@@ -249,67 +249,67 @@ const (
 
 // Penalty represents late payment penalty configuration
 type Penalty struct {
-	Type        string  `json:"type"`         // 'fixed' or 'percentage'
-	Fee         float64 `json:"fee"`          // Penalty fee or percentage rate
-	MaxAmount   float64 `json:"max_amount"`   // Maximum total penalty cap
-	Recurring   string  `json:"recurring"`    // 'daily', 'weekly', 'monthly', or 'once'
+	Type      string  `json:"type"`       // 'fixed' or 'percentage'
+	Fee       float64 `json:"fee"`        // Penalty fee or percentage rate
+	MaxAmount float64 `json:"max_amount"` // Maximum total penalty cap
+	Recurring string  `json:"recurring"`  // 'daily', 'weekly', 'monthly', or 'once'
 }
 
 // CreateBillRequest represents a bill creation request
 type CreateBillRequest struct {
 	BillID        string                 `json:"bill_id,omitempty"`        // Optional: Your unique bill identifier (max 100 chars). If omitted, one will be auto-generated
-	Amount        float64                `json:"amount"`                    // Required: Bill amount
-	Currency      string                 `json:"currency,omitempty"`        // Optional: Currency code (default: ETB)
-	DueDate       string                 `json:"due_date"`                  // Required: Due date in Y-m-d format
-	StartDate     string                 `json:"start_date,omitempty"`      // Optional: Start date in Y-m-d format
-	ExpiresDate   string                 `json:"expires_date,omitempty"`    // Optional: Expiry date in Y-m-d format
-	CustomerName  string                 `json:"customer_name,omitempty"`   // Optional: Customer's full name
-	CustomerPhone string                 `json:"customer_phone,omitempty"`  // Optional: Customer phone in international format
-	CustomerEmail string                 `json:"customer_email,omitempty"`  // Optional: Customer email
-	CustomerID    string                 `json:"customer_id,omitempty"`     // Optional: Your internal customer ID
-	Description   string                 `json:"description,omitempty"`     // Optional: Bill description
-	BillCode      string                 `json:"bill_code,omitempty"`       // Optional: Category code for filtering/routing
-	Cluster       string                 `json:"cluster,omitempty"`         // Optional: Geographic/organizational cluster
-	Penalty       *Penalty               `json:"penalty,omitempty"`         // Optional: Late payment penalty configuration
-	Metadata      map[string]interface{} `json:"metadata,omitempty"`        // Optional: Arbitrary key-value pairs
+	Amount        float64                `json:"amount"`                   // Required: Bill amount
+	Currency      string                 `json:"currency,omitempty"`       // Optional: Currency code (default: ETB)
+	DueDate       string                 `json:"due_date"`                 // Required: Due date in Y-m-d format
+	StartDate     string                 `json:"start_date,omitempty"`     // Optional: Start date in Y-m-d format
+	ExpiresDate   string                 `json:"expires_date,omitempty"`   // Optional: Expiry date in Y-m-d format
+	CustomerName  string                 `json:"customer_name,omitempty"`  // Optional: Customer's full name
+	CustomerPhone string                 `json:"customer_phone,omitempty"` // Optional: Customer phone in international format
+	CustomerEmail string                 `json:"customer_email,omitempty"` // Optional: Customer email
+	CustomerID    string                 `json:"customer_id,omitempty"`    // Optional: Your internal customer ID
+	Description   string                 `json:"description,omitempty"`    // Optional: Bill description
+	BillCode      string                 `json:"bill_code,omitempty"`      // Optional: Category code for filtering/routing
+	Cluster       string                 `json:"cluster,omitempty"`        // Optional: Geographic/organizational cluster
+	Penalty       *Penalty               `json:"penalty,omitempty"`        // Optional: Late payment penalty configuration
+	Metadata      map[string]interface{} `json:"metadata,omitempty"`       // Optional: Arbitrary key-value pairs
 }
 
 // BillResponse represents a bill response
 type BillResponse struct {
-	ID              string                 `json:"id"`
-	BillID          string                 `json:"bill_id"`
-	BillCode        string                 `json:"bill_code,omitempty"`
-	BillSeason      string                 `json:"bill_season,omitempty"`
-	Cluster         string                 `json:"cluster,omitempty"`
-	ExtCustomerID   string                 `json:"ext_customer_id,omitempty"`
-	CustomerName    string                 `json:"customer_name,omitempty"`
-	CustomerPhone   string                 `json:"customer_phone,omitempty"`
-	CustomerEmail   string                 `json:"customer_email,omitempty"`
-	CustomerID      string                 `json:"customer_id,omitempty"`
-	Description     string                 `json:"description,omitempty"`
-	Amount          float64                `json:"amount"`
-	ServiceCharge   float64                `json:"service_charge"`
-	PenaltyAmount   float64                `json:"penalty_amount"`
-	TotalDue        float64                `json:"total_due"`
-	Paid            float64                `json:"paid"`
-	BalanceDue      float64                `json:"balance_due"`
-	Currency        string                 `json:"currency"`
-	Status          BillStatus             `json:"status"`
-	DueDate         string                 `json:"due_date"`
-	StartDate       string                 `json:"start_date,omitempty"`
-	ExpiresDate     string                 `json:"expires_date,omitempty"`
-	IsOverdue       bool                   `json:"is_overdue"`
-	DaysOverdue     int                    `json:"days_overdue"`
-	PenaltyType     string                 `json:"penalty_type,omitempty"`
-	PenaltyFee      float64                `json:"penalty_fee,omitempty"`
-	MaxPenaltyAmount float64               `json:"max_penalty_amount,omitempty"`
-	PenaltyRecurring string               `json:"penalty_recurring,omitempty"`
-	CreatedAt       string                 `json:"created_at"`
-	UpdatedAt       string                 `json:"updated_at"`
-	ShareToken      string                 `json:"share_token,omitempty"`
-	PenaltyConfig   *Penalty               `json:"penalty,omitempty"`
-	Metadata        map[string]interface{} `json:"metadata,omitempty"`
-	Payments        []PaymentRecord        `json:"payments,omitempty"`
+	ID               string                 `json:"id"`
+	BillID           string                 `json:"bill_id"`
+	BillCode         string                 `json:"bill_code,omitempty"`
+	BillSeason       string                 `json:"bill_season,omitempty"`
+	Cluster          string                 `json:"cluster,omitempty"`
+	ExtCustomerID    string                 `json:"ext_customer_id,omitempty"`
+	CustomerName     string                 `json:"customer_name,omitempty"`
+	CustomerPhone    string                 `json:"customer_phone,omitempty"`
+	CustomerEmail    string                 `json:"customer_email,omitempty"`
+	CustomerID       string                 `json:"customer_id,omitempty"`
+	Description      string                 `json:"description,omitempty"`
+	Amount           float64                `json:"amount"`
+	ServiceCharge    float64                `json:"service_charge"`
+	PenaltyAmount    float64                `json:"penalty_amount"`
+	TotalDue         float64                `json:"total_due"`
+	Paid             float64                `json:"paid"`
+	BalanceDue       float64                `json:"balance_due"`
+	Currency         string                 `json:"currency"`
+	Status           BillStatus             `json:"status"`
+	DueDate          string                 `json:"due_date"`
+	StartDate        string                 `json:"start_date,omitempty"`
+	ExpiresDate      string                 `json:"expires_date,omitempty"`
+	IsOverdue        bool                   `json:"is_overdue"`
+	DaysOverdue      int                    `json:"days_overdue"`
+	PenaltyType      string                 `json:"penalty_type,omitempty"`
+	PenaltyFee       float64                `json:"penalty_fee,omitempty"`
+	MaxPenaltyAmount float64                `json:"max_penalty_amount,omitempty"`
+	PenaltyRecurring string                 `json:"penalty_recurring,omitempty"`
+	CreatedAt        string                 `json:"created_at"`
+	UpdatedAt        string                 `json:"updated_at"`
+	ShareToken       string                 `json:"share_token,omitempty"`
+	PenaltyConfig    *Penalty               `json:"penalty,omitempty"`
+	Metadata         map[string]interface{} `json:"metadata,omitempty"`
+	Payments         []PaymentRecord        `json:"payments,omitempty"`
 }
 
 // PaymentRecord represents a payment record on a bill
@@ -330,10 +330,10 @@ type BulkCreateBillsRequest struct {
 
 // BulkCreateBillsResponse represents a bulk bill creation response
 type BulkCreateBillsResponse struct {
-	CreatedCount int                   `json:"created_count"`
-	ErrorCount   int                   `json:"error_count"`
-	Created      []BillResponse        `json:"created"`
-	Errors       []BulkBillError       `json:"errors"`
+	CreatedCount int             `json:"created_count"`
+	ErrorCount   int             `json:"error_count"`
+	Created      []BillResponse  `json:"created"`
+	Errors       []BulkBillError `json:"errors"`
 }
 
 // BulkBillError represents an error in bulk bill creation
@@ -344,14 +344,14 @@ type BulkBillError struct {
 
 // ListBillsRequest represents a list bills request
 type ListBillsRequest struct {
-	Status    string  `json:"status,omitempty"`    // Filter by status
-	Search    string  `json:"search,omitempty"`    // Search by bill_id, customer_name, customer_phone, or customer_id
-	Cluster   string  `json:"cluster,omitempty"`   // Filter by cluster
-	BillCode  string  `json:"bill_code,omitempty"` // Filter by bill code
-	From      string  `json:"from,omitempty"`      // Filter by creation date (from) in Y-m-d format
-	To        string  `json:"to,omitempty"`        // Filter by creation date (to) in Y-m-d format
-	Page      int     `json:"page,omitempty"`      // Page number (default: 1)
-	Limit     int     `json:"limit,omitempty"`     // Items per page (max: 100, default: 25)
+	Status   string `json:"status,omitempty"`    // Filter by status
+	Search   string `json:"search,omitempty"`    // Search by bill_id, customer_name, customer_phone, or customer_id
+	Cluster  string `json:"cluster,omitempty"`   // Filter by cluster
+	BillCode string `json:"bill_code,omitempty"` // Filter by bill code
+	From     string `json:"from,omitempty"`      // Filter by creation date (from) in Y-m-d format
+	To       string `json:"to,omitempty"`        // Filter by creation date (to) in Y-m-d format
+	Page     int    `json:"page,omitempty"`      // Page number (default: 1)
+	Limit    int    `json:"limit,omitempty"`     // Items per page (max: 100, default: 25)
 }
 
 // ListBillsResponse represents a list bills response
@@ -364,14 +364,14 @@ type ListBillsResponse struct {
 
 // BillStatistics represents bill statistics
 type BillStatistics struct {
-	Pending      int     `json:"pending"`
-	Paid         int     `json:"paid"`
-	Forwarded    int     `json:"forwarded"`
-	Cancelled    int     `json:"cancelled"`
-	Expired      int     `json:"expired"`
-	Overdue      int     `json:"overdue"`
-	TotalAmount  float64 `json:"total_amount"`
-	TotalPaid    float64 `json:"total_paid"`
+	Pending     int     `json:"pending"`
+	Paid        int     `json:"paid"`
+	Forwarded   int     `json:"forwarded"`
+	Cancelled   int     `json:"cancelled"`
+	Expired     int     `json:"expired"`
+	Overdue     int     `json:"overdue"`
+	TotalAmount float64 `json:"total_amount"`
+	TotalPaid   float64 `json:"total_paid"`
 }
 
 // BillDashboardSummary represents bill dashboard summary
@@ -408,21 +408,21 @@ type BillDashboardByBillCode struct {
 
 // BillDashboardTrend represents bill trend data
 type BillDashboardTrend struct {
-	Date           string  `json:"date"`
-	BillsCreated   int     `json:"bills_created"`
-	AmountCreated  float64 `json:"amount_created"`
-	BillsPaid      int     `json:"bills_paid"`
-	AmountPaid     float64 `json:"amount_paid"`
+	Date          string  `json:"date"`
+	BillsCreated  int     `json:"bills_created"`
+	AmountCreated float64 `json:"amount_created"`
+	BillsPaid     int     `json:"bills_paid"`
+	AmountPaid    float64 `json:"amount_paid"`
 }
 
 // BillDashboard represents bill dashboard analytics
 type BillDashboard struct {
-	From        string                     `json:"from,omitempty"`
-	To          string                     `json:"to,omitempty"`
-	Summary     BillDashboardSummary       `json:"summary"`
-	ByCluster   []BillDashboardByCluster   `json:"by_cluster,omitempty"`
-	ByBillCode  []BillDashboardByBillCode  `json:"by_bill_code,omitempty"`
-	Trend       []BillDashboardTrend       `json:"trend,omitempty"`
+	From       string                    `json:"from,omitempty"`
+	To         string                    `json:"to,omitempty"`
+	Summary    BillDashboardSummary      `json:"summary"`
+	ByCluster  []BillDashboardByCluster  `json:"by_cluster,omitempty"`
+	ByBillCode []BillDashboardByBillCode `json:"by_bill_code,omitempty"`
+	Trend      []BillDashboardTrend      `json:"trend,omitempty"`
 }
 
 // PaymentLinkResponse represents a payment link response
@@ -438,29 +438,29 @@ type PublicBillLookupRequest struct {
 
 // PublicBillLookupResponse represents a public bill lookup response
 type PublicBillLookupResponse struct {
-	ID              string  `json:"id"`
-	BillID          string  `json:"bill_id"`
-	BillCode        string  `json:"bill_code,omitempty"`
-	BillSeason      string  `json:"bill_season,omitempty"`
-	Cluster         string  `json:"cluster,omitempty"`
-	ExtCustomerID   string  `json:"ext_customer_id,omitempty"`
-	CustomerName    string  `json:"customer_name,omitempty"`
-	Description     string  `json:"description,omitempty"`
-	Amount          float64 `json:"amount"`
-	ServiceCharge   float64 `json:"service_charge"`
-	PenaltyAmount   float64 `json:"penalty_amount"`
-	TotalDue        float64 `json:"total_due"`
-	AmountDue       float64 `json:"amount_due"`
-	Paid            float64 `json:"paid"`
-	Currency        string  `json:"currency"`
-	Client          *PublicBillClient `json:"client,omitempty"`
-	StartAt         string  `json:"start_at,omitempty"`
-	DueAt           string  `json:"due_at,omitempty"`
-	PaymentStatus   string  `json:"payment_status"` // Uppercase: 'PENDING', 'PAID', etc.
-	PenaltyType     string  `json:"penalty_type,omitempty"`
-	PenaltyFee      float64 `json:"penalty_fee,omitempty"`
-	MaxPenaltyAmount float64 `json:"max_penalty_amount,omitempty"`
-	PenaltyRecurring string `json:"penalty_recurring,omitempty"`
+	ID               string            `json:"id"`
+	BillID           string            `json:"bill_id"`
+	BillCode         string            `json:"bill_code,omitempty"`
+	BillSeason       string            `json:"bill_season,omitempty"`
+	Cluster          string            `json:"cluster,omitempty"`
+	ExtCustomerID    string            `json:"ext_customer_id,omitempty"`
+	CustomerName     string            `json:"customer_name,omitempty"`
+	Description      string            `json:"description,omitempty"`
+	Amount           float64           `json:"amount"`
+	ServiceCharge    float64           `json:"service_charge"`
+	PenaltyAmount    float64           `json:"penalty_amount"`
+	TotalDue         float64           `json:"total_due"`
+	AmountDue        float64           `json:"amount_due"`
+	Paid             float64           `json:"paid"`
+	Currency         string            `json:"currency"`
+	Client           *PublicBillClient `json:"client,omitempty"`
+	StartAt          string            `json:"start_at,omitempty"`
+	DueAt            string            `json:"due_at,omitempty"`
+	PaymentStatus    string            `json:"payment_status"` // Uppercase: 'PENDING', 'PAID', etc.
+	PenaltyType      string            `json:"penalty_type,omitempty"`
+	PenaltyFee       float64           `json:"penalty_fee,omitempty"`
+	MaxPenaltyAmount float64           `json:"max_penalty_amount,omitempty"`
+	PenaltyRecurring string            `json:"penalty_recurring,omitempty"`
 }
 
 // PublicBillClient represents client information in public bill lookup
@@ -471,23 +471,23 @@ type PublicBillClient struct {
 
 // BillerSettingsRequest represents a biller settings update request
 type BillerSettingsRequest struct {
-	BillerName              string                 `json:"biller_name,omitempty"`
-	BillerCategory          string                 `json:"biller_category,omitempty"`
-	BillerDescription       string                 `json:"biller_description,omitempty"`
-	IconURL                 string                 `json:"icon_url,omitempty"`
-	ServiceChargeRate       float64                `json:"service_charge_rate,omitempty"`
-	ServiceChargeType       string                 `json:"service_charge_type,omitempty"`
-	MinServiceCharge        float64                `json:"min_service_charge,omitempty"`
-	MaxServiceCharge        float64                `json:"max_service_charge,omitempty"`
-	ServiceChargeRanges     []ServiceChargeRange    `json:"service_charge_ranges,omitempty"`
-	Clusters                []string               `json:"clusters,omitempty"`
-	BillCodes               []BillCode              `json:"bill_codes,omitempty"`
-	WebhookURL              string                 `json:"webhook_url,omitempty"`
-	WebhookSecret           string                 `json:"webhook_secret,omitempty"`
-	SettlementBankCode      string                 `json:"settlement_bank_code,omitempty"`
-	SettlementAccountNumber string                 `json:"settlement_account_number,omitempty"`
-	SettlementAccountName   string                 `json:"settlement_account_name,omitempty"`
-	SettlementAccounts      []SettlementAccount     `json:"settlement_accounts,omitempty"`
+	BillerName              string               `json:"biller_name,omitempty"`
+	BillerCategory          string               `json:"biller_category,omitempty"`
+	BillerDescription       string               `json:"biller_description,omitempty"`
+	IconURL                 string               `json:"icon_url,omitempty"`
+	ServiceChargeRate       float64              `json:"service_charge_rate,omitempty"`
+	ServiceChargeType       string               `json:"service_charge_type,omitempty"`
+	MinServiceCharge        float64              `json:"min_service_charge,omitempty"`
+	MaxServiceCharge        float64              `json:"max_service_charge,omitempty"`
+	ServiceChargeRanges     []ServiceChargeRange `json:"service_charge_ranges,omitempty"`
+	Clusters                []string             `json:"clusters,omitempty"`
+	BillCodes               []BillCode           `json:"bill_codes,omitempty"`
+	WebhookURL              string               `json:"webhook_url,omitempty"`
+	WebhookSecret           string               `json:"webhook_secret,omitempty"`
+	SettlementBankCode      string               `json:"settlement_bank_code,omitempty"`
+	SettlementAccountNumber string               `json:"settlement_account_number,omitempty"`
+	SettlementAccountName   string               `json:"settlement_account_name,omitempty"`
+	SettlementAccounts      []SettlementAccount  `json:"settlement_accounts,omitempty"`
 }
 
 // ServiceChargeRange represents a service charge range
@@ -513,56 +513,56 @@ type SettlementAccount struct {
 
 // BillerSettingsResponse represents a biller settings response
 type BillerSettingsResponse struct {
-	Configured bool                        `json:"configured"`
-	Settings   *BillerSettingsDetail       `json:"settings,omitempty"`
+	Configured bool                  `json:"configured"`
+	Settings   *BillerSettingsDetail `json:"settings,omitempty"`
 }
 
 // BillerSettingsDetail represents detailed biller settings
 type BillerSettingsDetail struct {
-	ID                       string                 `json:"id"`
-	BillerCode               string                 `json:"biller_code"`
-	BillerName               string                 `json:"biller_name"`
-	BillerCategory           string                 `json:"biller_category,omitempty"`
-	BillerDescription        string                 `json:"biller_description,omitempty"`
-	IconURL                  string                 `json:"icon_url,omitempty"`
-	ServiceChargeRate        float64                `json:"service_charge_rate"`
-	ServiceChargeType        string                 `json:"service_charge_type"`
-	MinServiceCharge         float64                `json:"min_service_charge,omitempty"`
-	MaxServiceCharge         float64                `json:"max_service_charge,omitempty"`
-	ServiceChargeRanges      []ServiceChargeRange    `json:"service_charge_ranges,omitempty"`
-	Clusters                 []string               `json:"clusters"`
-	BillCodes                []BillCode              `json:"bill_codes"`
-	WebhookURL               string                 `json:"webhook_url,omitempty"`
-	WebhookSecretConfigured  bool                   `json:"webhook_secret_configured"`
-	SettlementBankCode       string                 `json:"settlement_bank_code,omitempty"`
-	SettlementAccountNumber  string                 `json:"settlement_account_number,omitempty"`
-	SettlementAccountName    string                 `json:"settlement_account_name,omitempty"`
-	SettlementAccounts       []SettlementAccount     `json:"settlement_accounts,omitempty"`
-	ShortCode                string                 `json:"short_code,omitempty"`
-	BillerPrefix             string                 `json:"biller_prefix,omitempty"`
-	IsActive                 bool                   `json:"is_active"`
-	RequiresExternalSettlement bool                  `json:"requires_external_settlement"`
-	Config                   map[string]interface{} `json:"config,omitempty"`
-	CreatedAt                string                 `json:"created_at"`
-	UpdatedAt                string                 `json:"updated_at"`
+	ID                         string                 `json:"id"`
+	BillerCode                 string                 `json:"biller_code"`
+	BillerName                 string                 `json:"biller_name"`
+	BillerCategory             string                 `json:"biller_category,omitempty"`
+	BillerDescription          string                 `json:"biller_description,omitempty"`
+	IconURL                    string                 `json:"icon_url,omitempty"`
+	ServiceChargeRate          float64                `json:"service_charge_rate"`
+	ServiceChargeType          string                 `json:"service_charge_type"`
+	MinServiceCharge           float64                `json:"min_service_charge,omitempty"`
+	MaxServiceCharge           float64                `json:"max_service_charge,omitempty"`
+	ServiceChargeRanges        []ServiceChargeRange   `json:"service_charge_ranges,omitempty"`
+	Clusters                   []string               `json:"clusters"`
+	BillCodes                  []BillCode             `json:"bill_codes"`
+	WebhookURL                 string                 `json:"webhook_url,omitempty"`
+	WebhookSecretConfigured    bool                   `json:"webhook_secret_configured"`
+	SettlementBankCode         string                 `json:"settlement_bank_code,omitempty"`
+	SettlementAccountNumber    string                 `json:"settlement_account_number,omitempty"`
+	SettlementAccountName      string                 `json:"settlement_account_name,omitempty"`
+	SettlementAccounts         []SettlementAccount    `json:"settlement_accounts,omitempty"`
+	ShortCode                  string                 `json:"short_code,omitempty"`
+	BillerPrefix               string                 `json:"biller_prefix,omitempty"`
+	IsActive                   bool                   `json:"is_active"`
+	RequiresExternalSettlement bool                   `json:"requires_external_settlement"`
+	Config                     map[string]interface{} `json:"config,omitempty"`
+	CreatedAt                  string                 `json:"created_at"`
+	UpdatedAt                  string                 `json:"updated_at"`
 }
 
 // UpdateBillRequest represents a bill update request (partial update)
 type UpdateBillRequest struct {
-	Amount          float64                `json:"amount,omitempty"`
-	Currency        string                 `json:"currency,omitempty"`
-	DueDate         string                 `json:"due_date,omitempty"`
-	StartDate       string                 `json:"start_date,omitempty"`
-	ExpiresDate     string                 `json:"expires_date,omitempty"`
-	CustomerName    string                 `json:"customer_name,omitempty"`
-	CustomerPhone   string                 `json:"customer_phone,omitempty"`
-	CustomerEmail   string                 `json:"customer_email,omitempty"`
-	CustomerID      string                 `json:"customer_id,omitempty"`
-	Description     string                 `json:"description,omitempty"`
-	BillCode        string                 `json:"bill_code,omitempty"`
-	Cluster         string                 `json:"cluster,omitempty"`
-	Penalty         *Penalty               `json:"penalty,omitempty"`
-	Metadata        map[string]interface{} `json:"metadata,omitempty"`
+	Amount        float64                `json:"amount,omitempty"`
+	Currency      string                 `json:"currency,omitempty"`
+	DueDate       string                 `json:"due_date,omitempty"`
+	StartDate     string                 `json:"start_date,omitempty"`
+	ExpiresDate   string                 `json:"expires_date,omitempty"`
+	CustomerName  string                 `json:"customer_name,omitempty"`
+	CustomerPhone string                 `json:"customer_phone,omitempty"`
+	CustomerEmail string                 `json:"customer_email,omitempty"`
+	CustomerID    string                 `json:"customer_id,omitempty"`
+	Description   string                 `json:"description,omitempty"`
+	BillCode      string                 `json:"bill_code,omitempty"`
+	Cluster       string                 `json:"cluster,omitempty"`
+	Penalty       *Penalty               `json:"penalty,omitempty"`
+	Metadata      map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // DeleteBillResponse represents a bill deletion response
@@ -581,10 +581,10 @@ type RecordManualPaymentRequest struct {
 
 // RecordManualPaymentResponse represents a manual payment recording response
 type RecordManualPaymentResponse struct {
-	PaymentID   string  `json:"payment_id"`
-	Amount      float64 `json:"amount"`
-	BillStatus  string  `json:"bill_status"`
-	BalanceDue  float64 `json:"balance_due"`
+	PaymentID  string  `json:"payment_id"`
+	Amount     float64 `json:"amount"`
+	BillStatus string  `json:"bill_status"`
+	BalanceDue float64 `json:"balance_due"`
 }
 
 // SendPaymentReminderRequest represents a send payment reminder request
@@ -594,9 +594,9 @@ type SendPaymentReminderRequest struct {
 
 // SendPaymentReminderResponse represents a send payment reminder response
 type SendPaymentReminderResponse struct {
-	Sent                bool   `json:"sent"`
-	ReminderCount       int    `json:"reminder_count"`
-	LastReminderSentAt  string `json:"last_reminder_sent_at"`
+	Sent               bool   `json:"sent"`
+	ReminderCount      int    `json:"reminder_count"`
+	LastReminderSentAt string `json:"last_reminder_sent_at"`
 }
 
 // GenerateBillIDResponse represents a generate bill ID response
@@ -610,4 +610,121 @@ type InitiateCheckoutResponse struct {
 	BalanceDue      float64 `json:"balance_due"`
 	Currency        string  `json:"currency"`
 	CheckoutURL     string  `json:"checkout_url"`
+}
+
+// Hold Payment (Escrow) Types
+
+// EscrowStatus represents the status of an escrow
+type EscrowStatus string
+
+const (
+	EscrowStatusFunded      EscrowStatus = "funded"
+	EscrowStatusWithdrawing EscrowStatus = "withdrawing"
+	EscrowStatusWithdrawn   EscrowStatus = "withdrawn"
+	EscrowStatusReleased    EscrowStatus = "released"
+	EscrowStatusCancelled   EscrowStatus = "cancelled"
+)
+
+// Escrow represents a hold payment (escrow)
+type Escrow struct {
+	ID                      string       `json:"id"`
+	MerchantID              string       `json:"merchant_id"`
+	WalletID                string       `json:"wallet_id"`
+	WalletPhone             string       `json:"wallet_phone"`
+	WalletName              string       `json:"wallet_name"`
+	Amount                  string       `json:"amount"`
+	Currency                string       `json:"currency"`
+	Status                  EscrowStatus `json:"status"`
+	Purpose                 string       `json:"purpose"`
+	Mode                    string       `json:"mode"`
+	CreatedAt               string       `json:"created_at"`
+	ReleasedAt              string       `json:"released_at"`
+	WithdrawnAt             string       `json:"withdrawn_at"`
+	CancelledAt             string       `json:"cancelled_at"`
+	ReleasedBy              string       `json:"released_by"`
+	CancelledBy             string       `json:"cancelled_by"`
+	WithdrawalBankReference string       `json:"withdrawal_bank_reference"`
+	WithdrawalFeeAmount     string       `json:"withdrawal_fee_amount"`
+}
+
+// ListEscrowsRequest represents a request to list escrows
+type ListEscrowsRequest struct {
+	Status EscrowStatus `json:"status,omitempty"`
+}
+
+// ListEscrowsResponse represents a list of escrows
+type ListEscrowsResponse struct {
+	Escrows []Escrow `json:"escrows"`
+}
+
+// PullEscrowFundsResponse represents the response when pulling escrow funds
+type PullEscrowFundsResponse struct {
+	ID         string       `json:"id"`
+	Status     EscrowStatus `json:"status"`
+	Amount     string       `json:"amount"`
+	Currency   string       `json:"currency"`
+	ReleasedAt string       `json:"released_at"`
+	ReleasedBy string       `json:"released_by"`
+}
+
+// Pay Merchant (Direct Pay) Types
+
+// DirectPaySettings represents the Direct Pay settings
+type DirectPaySettings struct {
+	CustomerIDRequired           bool   `json:"customer_id_required"`
+	ReferenceRequired            bool   `json:"reference_required"`
+	ValidationAdapter            string `json:"validation_adapter"`
+	ValidationStrict             bool   `json:"validation_strict"`
+	ValidationURL                string `json:"validation_url"`
+	ValidationMethod             string `json:"validation_method"`
+	ValidationAPIKey             string `json:"validation_api_key"`
+	ValidationAuthHeader         string `json:"validation_auth_header"`
+	ValidationRequestTemplate    string `json:"validation_request_template"`
+	ValidationCustomerNamePath   string `json:"validation_customer_name_path"`
+	ValidationReferenceValidPath string `json:"validation_reference_valid_path"`
+	ValidationReferencePath      string `json:"validation_reference_path"`
+	ValidationAmountPath         string `json:"validation_amount_path"`
+	ValidationErrorPath          string `json:"validation_error_path"`
+	ValidationTimeout            int    `json:"validation_timeout"`
+}
+
+// GetDirectPaySettingsResponse represents the response when getting Direct Pay settings
+type GetDirectPaySettingsResponse struct {
+	Configured bool              `json:"configured"`
+	Settings   DirectPaySettings `json:"settings"`
+}
+
+// UpdateDirectPaySettingsRequest represents a request to update Direct Pay settings
+type UpdateDirectPaySettingsRequest struct {
+	CustomerIDRequired           *bool   `json:"customer_id_required,omitempty"`
+	ReferenceRequired            *bool   `json:"reference_required,omitempty"`
+	ValidationAdapter            *string `json:"validation_adapter,omitempty"`
+	ValidationStrict             *bool   `json:"validation_strict,omitempty"`
+	ValidationURL                *string `json:"validation_url,omitempty"`
+	ValidationMethod             *string `json:"validation_method,omitempty"`
+	ValidationAPIKey             *string `json:"validation_api_key,omitempty"`
+	ValidationAuthHeader         *string `json:"validation_auth_header,omitempty"`
+	ValidationRequestTemplate    *string `json:"validation_request_template,omitempty"`
+	ValidationCustomerNamePath   *string `json:"validation_customer_name_path,omitempty"`
+	ValidationReferenceValidPath *string `json:"validation_reference_valid_path,omitempty"`
+	ValidationReferencePath      *string `json:"validation_reference_path,omitempty"`
+	ValidationAmountPath         *string `json:"validation_amount_path,omitempty"`
+	ValidationErrorPath          *string `json:"validation_error_path,omitempty"`
+	ValidationTimeout            *int    `json:"validation_timeout,omitempty"`
+}
+
+// TestDirectPaySettingsRequest represents a request to test Direct Pay settings
+type TestDirectPaySettingsRequest struct {
+	CustomerID string `json:"customer_id"`
+	Reference  string `json:"reference,omitempty"`
+}
+
+// TestDirectPaySettingsResponse represents the response when testing Direct Pay settings
+type TestDirectPaySettingsResponse struct {
+	ValidationPerformed bool     `json:"validation_performed"`
+	CustomerName        *string  `json:"customer_name"`
+	ReferenceValid      *bool    `json:"reference_valid"`
+	Reference           *string  `json:"reference"`
+	Amount              *float64 `json:"amount"`
+	Error               *string  `json:"error"`
 }

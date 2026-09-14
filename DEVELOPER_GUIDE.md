@@ -12,8 +12,10 @@ Welcome to the official developer guide for the `ghion-go-sdk`. This document pr
      - [USSD Flow](#ussd-flow)
      - [QR Code Flow](#qr-code-flow)
    - [Bill Payment API](#4-bill-payment-api)
+   - [Hold Payment (Escrow)](#5-hold-payment-escrow)
+   - [Pay Merchant (Direct Pay)](#6-pay-merchant-direct-pay)
    - [Webhooks Integration](#3-webhooks-integration)
-   - [Error Handling](#5-error-handling)
+   - [Error Handling](#7-error-handling)
 4. [Best Practices](#best-practices)
 5. [Common Issues & Fixes](#common-issues--fixes)
 
@@ -445,7 +447,220 @@ fmt.Printf("Checkout URL: %s\n", checkout.CheckoutURL)
 - Useful when you need to programmatically generate payment links for bills
 - The `payment_link_slug` can be used to construct custom URLs
 
-### 5. Webhooks Integration
+### 5. Hold Payment (Escrow)
+
+Hold Payment (Escrow) allows customers to hold funds until you pull them. This is useful for marketplace scenarios where you want to ensure funds are available before releasing them to sellers.
+
+**Note:** These features require module enablement by Ghion support. Contact Ghion support to enable Hold Payment for your account.
+
+#### Listing Escrows
+
+List all held payments (escrows) for your account, optionally filtered by status:
+
+```go
+// List all escrows
+escrows, err := client.ListEscrows(nil)
+if err != nil {
+    // Handle error
+}
+
+for _, escrow := range escrows.Escrows {
+    fmt.Printf("Escrow ID: %s, Status: %s, Amount: %s %s\n",
+        escrow.ID, escrow.Status, escrow.Amount, escrow.Currency)
+}
+
+// List escrows with status filter
+fundedEscrows, err := client.ListEscrows(&ghion.ListEscrowsRequest{
+    Status: ghion.EscrowStatusFunded,
+})
+if err != nil {
+    // Handle error
+}
+```
+
+**Escrow Status Values:**
+- `EscrowStatusFunded`: Funds are held and available to pull
+- `EscrowStatusWithdrawing`: Funds are being withdrawn
+- `EscrowStatusWithdrawn`: Funds have been withdrawn
+- `EscrowStatusReleased`: Funds have been released
+- `EscrowStatusCancelled`: Escrow was cancelled
+
+#### Getting Escrow Details
+
+Retrieve a single escrow by its ID:
+
+```go
+escrow, err := client.GetEscrow("escrow-123")
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Escrow ID: %s\n", escrow.ID)
+fmt.Printf("Wallet: %s (%s)\n", escrow.WalletName, escrow.WalletPhone)
+fmt.Printf("Amount: %s %s\n", escrow.Amount, escrow.Currency)
+fmt.Printf("Status: %s\n", escrow.Status)
+fmt.Printf("Purpose: %s\n", escrow.Purpose)
+```
+
+#### Pulling Escrow Funds
+
+Pull funds from a funded escrow to your balance:
+
+```go
+response, err := client.PullEscrowFunds("escrow-123")
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Escrow ID: %s\n", response.ID)
+fmt.Printf("New Status: %s\n", response.Status)
+fmt.Printf("Amount Released: %s %s\n", response.Amount, response.Currency)
+fmt.Printf("Released At: %s\n", response.ReleasedAt)
+fmt.Printf("Released By: %s\n", response.ReleasedBy)
+```
+
+**Important Notes:**
+- Only escrows with status `funded` can have funds pulled
+- After pulling, the escrow status changes to `released`
+- This operation transfers funds from the escrow to your merchant balance
+
+#### Webhook Events for Escrows
+
+The following webhook events are sent for escrow operations:
+- `escrow.funded`: When funds are held in escrow
+- `escrow.released`: When funds are pulled from escrow
+- `escrow.cancelled`: When an escrow is cancelled
+
+### 6. Pay Merchant (Direct Pay)
+
+Pay Merchant (Direct Pay) allows wallet users to pay merchants directly using their customer ID and reference. You can configure customer validation via HTTP adapter to verify customer details before payment.
+
+**Note:** These features require module enablement by Ghion support. Contact Ghion support to enable Pay Merchant for your account.
+
+#### Getting Direct Pay Settings
+
+Retrieve current Pay Merchant settings:
+
+```go
+settings, err := client.GetDirectPaySettings()
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Configured: %v\n", settings.Configured)
+fmt.Printf("Customer ID Required: %v\n", settings.Settings.CustomerIDRequired)
+fmt.Printf("Reference Required: %v\n", settings.Settings.ReferenceRequired)
+fmt.Printf("Validation Adapter: %s\n", settings.Settings.ValidationAdapter)
+fmt.Printf("Validation URL: %s\n", settings.Settings.ValidationURL)
+fmt.Printf("Validation Timeout: %d seconds\n", settings.Settings.ValidationTimeout)
+```
+
+#### Updating Direct Pay Settings
+
+Configure Pay Merchant settings including customer validation:
+
+```go
+customerIDRequired := true
+referenceRequired := true
+validationAdapter := "http"
+validationURL := "https://api.example.com/validate"
+validationTimeout := 10
+
+settings, err := client.UpdateDirectPaySettings(&ghion.UpdateDirectPaySettingsRequest{
+    CustomerIDRequired:   &customerIDRequired,
+    ReferenceRequired:    &referenceRequired,
+    ValidationAdapter:    &validationAdapter,
+    ValidationURL:        &validationURL,
+    ValidationTimeout:    &validationTimeout,
+    ValidationMethod:     func() *string { s := "POST"; return &s }(),
+    ValidationAPIKey:     func() *string { s := "your-api-key"; return &s }(),
+    ValidationAuthHeader: func() *string { s := "Authorization"; return &s }(),
+})
+if err != nil {
+    // Handle error
+}
+```
+
+**Validation Configuration Options:**
+- `validation_adapter`: "http" for HTTP validation, or "none" to disable
+- `validation_url`: Your validation endpoint URL (required when adapter is "http")
+- `validation_method`: HTTP method to use (POST, GET)
+- `validation_api_key`: API key to send to your validation endpoint
+- `validation_auth_header`: Header name for the API key (e.g., "Authorization")
+- `validation_timeout`: Request timeout in seconds (1-60)
+- `validation_strict`: If true, reject payments when validation fails
+
+#### Testing Direct Pay Settings
+
+Test your validation configuration before going live:
+
+```go
+testResult, err := client.TestDirectPaySettings(&ghion.TestDirectPaySettingsRequest{
+    CustomerID: "C-123",
+    Reference:  "INV-001",
+})
+if err != nil {
+    // Handle error
+}
+
+fmt.Printf("Validation Performed: %v\n", testResult.ValidationPerformed)
+if testResult.CustomerName != nil {
+    fmt.Printf("Customer Name: %s\n", *testResult.CustomerName)
+}
+if testResult.ReferenceValid != nil {
+    fmt.Printf("Reference Valid: %v\n", *testResult.ReferenceValid)
+}
+if testResult.Amount != nil {
+    fmt.Printf("Amount: %.2f\n", *testResult.Amount)
+}
+if testResult.Error != nil {
+    fmt.Printf("Error: %s\n", *testResult.Error)
+}
+```
+
+#### Customer Validation API
+
+When `validation_adapter` is set to "http", the SDK will call your validation endpoint with the following request:
+
+**Request Body:**
+```json
+{
+  "customer_id": "C-123",
+  "reference": "INV-001"
+}
+```
+
+**Expected Response:**
+```json
+{
+  "customer_name": "John Doe",
+  "reference_valid": true,
+  "reference": "INV-001",
+  "amount": 100.00,
+  "error": null
+}
+```
+
+**Response Path Configuration:**
+- `validation_customer_name_path`: JSON path to customer name in response (default: "customer_name")
+- `validation_reference_valid_path`: JSON path to reference validity (default: "reference_valid")
+- `validation_reference_path`: JSON path to reference (default: "reference")
+- `validation_amount_path`: JSON path to amount (default: "amount")
+- `validation_error_path`: JSON path to error message (default: "error")
+
+**Important Notes:**
+- Validation timeout must be between 1 and 60 seconds
+- If `validation_strict` is true, payments will be rejected when validation fails
+- If `validation_strict` is false, payments proceed even if validation fails (validation result is informational only)
+- The validation endpoint should return HTTP 200 with valid JSON
+
+#### Webhook Events for Direct Pay
+
+The following webhook events are sent for Direct Pay operations:
+- `direct_pay.completed`: When a direct payment is completed
+- `direct_pay.failed`: When a direct payment fails
+
+### 7. Webhooks Integration
 Webhooks are **mandatory** for robust payment verification. Users might close the browser while a payment is processing, so your server must rely on webhooks to fulfill orders.
 
 **Important:** Webhooks must parse the *raw* request body to verify the cryptographic signature.
@@ -488,7 +703,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-### 6. Error Handling
+### 8. Error Handling
 
 The SDK provides detailed error information through custom error types. Always handle errors appropriately to provide good user experience and debugging information.
 

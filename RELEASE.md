@@ -192,12 +192,31 @@ git push origin :refs/tags/v1.0.1
 - Verify tag is pushed: `git ls-remote --tags origin`
 - Check GitHub repository settings (must be public)
 
+## CI/CD Integration
+
+The SDK includes GitHub Actions for automated testing and releasing in a single workflow (`.github/workflows/ci.yml`):
+
+- **Test & Lint**: Runs on every push to main/develop
+- **Release**: Automatically creates git tags when commits start with "Release v"
+
+**Automated Release Process:**
+1. Update documentation and changelog
+2. Commit with message: `Release v1.0.1: Add new feature`
+3. Push to main branch
+4. GitHub Actions automatically creates and pushes the git tag
+
+**Manual Release (if automation fails):**
+```bash
+git tag -a v1.0.1 -m "Release v1.0.1: Add new feature"
+git push origin main
+git push origin v1.0.1
+```
+
 ## Summary
 
 1. Run tests and check coverage
 2. Update documentation and changelog
-3. Commit changes
-4. Create annotated git tag
-5. Push code and tags to GitHub
-6. Verify installation works
-7. Create GitHub release (optional)
+3. Commit with message: `Release v1.0.1: description`
+4. Push to main branch (GitHub Actions auto-creates tag)
+5. Verify installation works
+6. Create GitHub release (optional)

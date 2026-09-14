@@ -6,10 +6,10 @@ import (
 
 func TestErrorTypes(t *testing.T) {
 	tests := []struct {
-		name       string
-		errorType  interface{}
-		errorCode  string
-		errorMsg   string
+		name      string
+		errorType interface{}
+		errorCode string
+		errorMsg  string
 	}{
 		{
 			name:      "ValidationError",
@@ -144,7 +144,7 @@ func TestErrorTypes(t *testing.T) {
 
 func TestAPIErrorWithStatusCode(t *testing.T) {
 	err := NewAPIError("API error", 404, nil)
-	
+
 	apiErr, ok := err.GhionError.Details["status_code"]
 	if !ok {
 		t.Errorf("Expected status_code in details")

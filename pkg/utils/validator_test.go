@@ -2,6 +2,8 @@ package utils
 
 import (
 	"testing"
+
+	"github.com/yayawallet/ghion-go-sdk/pkg/types"
 )
 
 func TestValidateAPIKey(t *testing.T) {
@@ -495,68 +497,68 @@ func TestValidateBillID(t *testing.T) {
 
 func TestValidateCreateBillRequest(t *testing.T) {
 	tests := []struct {
-		name         string
-		billID       string
-		amount       float64
-		dueDate      string
+		name          string
+		billID        string
+		amount        float64
+		dueDate       string
 		customerEmail string
-		expectError  bool
+		expectError   bool
 	}{
 		{
-			name:         "valid request",
-			billID:       "INV-12345",
-			amount:       500,
-			dueDate:      "2026-09-01",
+			name:          "valid request",
+			billID:        "INV-12345",
+			amount:        500,
+			dueDate:       "2026-09-01",
 			customerEmail: "",
-			expectError:  false,
+			expectError:   false,
 		},
 		{
-			name:         "valid with email",
-			billID:       "INV-12345",
-			amount:       500,
-			dueDate:      "2026-09-01",
+			name:          "valid with email",
+			billID:        "INV-12345",
+			amount:        500,
+			dueDate:       "2026-09-01",
 			customerEmail: "test@example.com",
-			expectError:  false,
+			expectError:   false,
 		},
 		{
-			name:         "zero amount",
-			billID:       "INV-12345",
-			amount:       0,
-			dueDate:      "2026-09-01",
+			name:          "zero amount",
+			billID:        "INV-12345",
+			amount:        0,
+			dueDate:       "2026-09-01",
 			customerEmail: "",
-			expectError:  true,
+			expectError:   true,
 		},
 		{
-			name:         "negative amount",
-			billID:       "INV-12345",
-			amount:       -100,
-			dueDate:      "2026-09-01",
+			name:          "negative amount",
+			billID:        "INV-12345",
+			amount:        -100,
+			dueDate:       "2026-09-01",
 			customerEmail: "",
-			expectError:  true,
+			expectError:   true,
 		},
 		{
-			name:         "empty due date",
-			billID:       "INV-12345",
-			amount:       500,
-			dueDate:      "",
+			name:          "empty due date",
+			billID:        "INV-12345",
+			amount:        500,
+			dueDate:       "",
 			customerEmail: "",
-			expectError:  true,
+			expectError:   true,
 		},
 		{
-			name:         "invalid date format",
-			billID:       "INV-12345",
-			amount:       500,
-			dueDate:      "2026/09/01",
+			name:          "invalid date format",
+			billID:        "INV-12345",
+			amount:        500,
+			dueDate:       "2026/09/01",
 			customerEmail: "",
-			expectError:  true,
+			expectError:   true,
 		},
 		{
-			name:         "invalid email",
-			billID:       "INV-12345",
-			amount:       500,
-			dueDate:      "2026-09-01",
+			name:          "invalid email",
+			billID:        "INV-12345",
+			amount:        500,
+			dueDate:       "2026-09-01",
 			customerEmail: "invalid-email",
-			expectError:  true,
+			expectError:   true,
 		},
 	}
 
@@ -799,11 +801,11 @@ func TestValidateRecordManualPaymentRequest(t *testing.T) {
 
 func TestValidateBillerSettingsRequest(t *testing.T) {
 	tests := []struct {
-		name               string
-		serviceChargeRate  float64
-		clusters           []interface{}
-		billCodes          []interface{}
-		expectError        bool
+		name              string
+		serviceChargeRate float64
+		clusters          []interface{}
+		billCodes         []interface{}
+		expectError       bool
 	}{
 		{
 			name:              "valid request",
@@ -985,6 +987,179 @@ func TestIsValidEmail(t *testing.T) {
 			result := isValidEmail(tt.email)
 			if result != tt.expected {
 				t.Errorf("Expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestValidateEscrowID(t *testing.T) {
+	tests := []struct {
+		name        string
+		id          string
+		expectError bool
+	}{
+		{
+			name:        "valid escrow ID",
+			id:          "escrow-123",
+			expectError: false,
+		},
+		{
+			name:        "empty escrow ID",
+			id:          "",
+			expectError: true,
+		},
+		{
+			name:        "whitespace only",
+			id:          "   ",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateEscrowID(tt.id)
+			if tt.expectError && err == nil {
+				t.Error("Expected error but got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("Expected no error but got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateListEscrowsRequest(t *testing.T) {
+	tests := []struct {
+		name        string
+		status      string
+		expectError bool
+	}{
+		{
+			name:        "valid status",
+			status:      "funded",
+			expectError: false,
+		},
+		{
+			name:        "empty status",
+			status:      "",
+			expectError: false,
+		},
+		{
+			name:        "invalid status",
+			status:      "invalid",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateListEscrowsRequest(tt.status)
+			if tt.expectError && err == nil {
+				t.Error("Expected error but got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("Expected no error but got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateUpdateDirectPaySettingsRequest(t *testing.T) {
+	tests := []struct {
+		name        string
+		request     *types.UpdateDirectPaySettingsRequest
+		expectError bool
+	}{
+		{
+			name: "valid request",
+			request: &types.UpdateDirectPaySettingsRequest{
+				ValidationTimeout: func() *int { i := 10; return &i }(),
+			},
+			expectError: false,
+		},
+		{
+			name: "validation timeout too low",
+			request: &types.UpdateDirectPaySettingsRequest{
+				ValidationTimeout: func() *int { i := 0; return &i }(),
+			},
+			expectError: true,
+		},
+		{
+			name: "validation timeout too high",
+			request: &types.UpdateDirectPaySettingsRequest{
+				ValidationTimeout: func() *int { i := 61; return &i }(),
+			},
+			expectError: true,
+		},
+		{
+			name: "validation adapter http without URL",
+			request: &types.UpdateDirectPaySettingsRequest{
+				ValidationAdapter: func() *string { s := "http"; return &s }(),
+				ValidationURL:     func() *string { s := ""; return &s }(),
+			},
+			expectError: true,
+		},
+		{
+			name: "validation adapter http with URL",
+			request: &types.UpdateDirectPaySettingsRequest{
+				ValidationAdapter: func() *string { s := "http"; return &s }(),
+				ValidationURL:     func() *string { s := "https://api.example.com"; return &s }(),
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateUpdateDirectPaySettingsRequest(tt.request)
+			if tt.expectError && err == nil {
+				t.Error("Expected error but got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("Expected no error but got: %v", err)
+			}
+		})
+	}
+}
+
+func TestValidateTestDirectPaySettingsRequest(t *testing.T) {
+	tests := []struct {
+		name        string
+		request     *types.TestDirectPaySettingsRequest
+		expectError bool
+	}{
+		{
+			name: "valid request",
+			request: &types.TestDirectPaySettingsRequest{
+				CustomerID: "C-123",
+				Reference:  "INV-001",
+			},
+			expectError: false,
+		},
+		{
+			name: "empty customer ID",
+			request: &types.TestDirectPaySettingsRequest{
+				CustomerID: "",
+			},
+			expectError: true,
+		},
+		{
+			name: "valid without reference",
+			request: &types.TestDirectPaySettingsRequest{
+				CustomerID: "C-123",
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateTestDirectPaySettingsRequest(tt.request)
+			if tt.expectError && err == nil {
+				t.Error("Expected error but got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("Expected no error but got: %v", err)
 			}
 		})
 	}

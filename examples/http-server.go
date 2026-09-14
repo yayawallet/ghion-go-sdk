@@ -53,10 +53,10 @@ func initializePaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Amount      float64              `json:"amount"`
-		Currency    string               `json:"currency"`
-		Reference   string               `json:"reference"`
-		Description string               `json:"description"`
+		Amount      float64                `json:"amount"`
+		Currency    string                 `json:"currency"`
+		Reference   string                 `json:"reference"`
+		Description string                 `json:"description"`
 		Metadata    map[string]interface{} `json:"metadata"`
 	}
 
